@@ -90,8 +90,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: c791abd7f032511698668753369e20064f744502
-      resolved-ref: c791abd7f032511698668753369e20064f744502
+      ref: c564158c1377cd97d2ed7d33495b57786457744c
+      resolved-ref: c564158c1377cd97d2ed7d33495b57786457744c
       url: "https://github.com/Musta-Pollo/appflowy_editor_sync_plugin.git"
     source: git
     version: "0.0.1"
@@ -599,10 +599,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_rust_bridge
-      sha256: "5a5c7a5deeef2cc2ffe6076a33b0429f4a20ceac22a397297aed2b1eb067e611"
+      sha256: "39804d78730d41ecddbe97e38c7dd6c2b43f76e91ef7bbd329f98f9b0bd19e56"
       url: "https://pub.dev"
     source: hosted
-    version: "2.9.0"
+    version: "2.8.0"
   flutter_svg:
     dependency: transitive
     description:
@@ -1357,13 +1357,13 @@ packages:
     source: hosted
     version: "7.0.0"
   sqlite3:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: sqlite3
-      sha256: "45f168ae2213201b54e09429ed0c593dc2c88c924a1488d6f9c523a255d567cb"
+      sha256: "310af39c40dd0bb2058538333c9d9840a2725ae0b9f77e4fd09ad6696aa8f66e"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.6"
+    version: "2.7.5"
   sqlite3_flutter_libs:
     dependency: transitive
     description:

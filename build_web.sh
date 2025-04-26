@@ -22,7 +22,6 @@ flutter build web \
   --dart-define=DEMO_SUPABASE_URL="$SUPABASE_URL" \
   --dart-define=DEMO_SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
   --dart-define=DEMO_SUPABASE_STORAGE_BUCKET="$SUPABASE_STORAGE_BUCKET" \
-  --web-renderer canvaskit \
   --release
 
 echo "📝 Adding required COOP/COEP headers to index.html..."
