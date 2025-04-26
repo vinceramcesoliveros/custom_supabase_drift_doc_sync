@@ -32,7 +32,7 @@ jobs:
       
       # Build web app
       - name: Build web app
-        run: flutter build web
+        run: ./build_web
       
       # Deploy to Firebase
       - uses: FirebaseExtended/action-hosting-deploy@v0
