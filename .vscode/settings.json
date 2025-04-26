@@ -1,0 +1,5 @@
+{
+  "i18n-ally.localesPaths": [
+    "lib/sync/crdt/editor_plugins/i18n"
+  ]
+}
