@@ -32,8 +32,10 @@ jobs:
       
       # Build web app
       - name: Build web app
-        run: ./build_web
-      
+        run: |
+          chmod +x ./build_web.sh
+          ./build_web.sh
+    
       # Deploy to Firebase
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
