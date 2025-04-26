@@ -17,11 +17,35 @@ if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
   exit 1
 fi
 
-# Build with loaded variables
+echo "🏗️ Building Flutter web app..."
 flutter build web \
   --dart-define=DEMO_SUPABASE_URL="$SUPABASE_URL" \
   --dart-define=DEMO_SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
   --dart-define=DEMO_SUPABASE_STORAGE_BUCKET="$SUPABASE_STORAGE_BUCKET" \
+  --web-renderer canvaskit \
   --release
 
-echo "Web build completed with environment variables from .env file!"
+echo "📝 Adding required COOP/COEP headers to index.html..."
+# Add the headers to the HTML file directly
+INDEX_FILE="build/web/index.html"
+if [ -f "$INDEX_FILE" ]; then
+  # Create a backup of the original file
+  cp "$INDEX_FILE" "${INDEX_FILE}.bak"
+  
+  # Add the headers using sed
+  sed -i.tmp '/<head>/a \
+  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">\
+  <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">' "$INDEX_FILE"
+  
+  # Remove the temporary file created by sed
+  rm "${INDEX_FILE}.tmp" 2>/dev/null || true
+  
+  echo "✅ Headers added successfully to index.html"
+else
+  echo "❌ Error: Could not find index.html in build/web directory"
+  exit 1
+fi
+
+echo "✅ Web build completed with environment variables and security headers!"
+echo "  To test locally, run: cd build/web && python3 -m http.server 8000"
+echo "  Then open: http://localhost:8000"

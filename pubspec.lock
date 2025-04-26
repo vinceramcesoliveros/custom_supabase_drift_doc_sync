@@ -90,8 +90,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "417da74b582a13ed2d9ab5b0d2ec159e3c1ae2bc"
-      resolved-ref: "417da74b582a13ed2d9ab5b0d2ec159e3c1ae2bc"
+      ref: c791abd7f032511698668753369e20064f744502
+      resolved-ref: c791abd7f032511698668753369e20064f744502
       url: "https://github.com/Musta-Pollo/appflowy_editor_sync_plugin.git"
     source: git
     version: "0.0.1"
