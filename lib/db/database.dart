@@ -3,6 +3,7 @@ import 'package:custom_supabase_drift_sync/db/task_dao_mixin.dart';
 import 'package:custom_sync_drift_annotations/annotations.dart';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 part 'database.classsync.dart';
@@ -106,6 +107,24 @@ class AppDatabase extends _$AppDatabase {
   static QueryExecutor _openConnection() {
     // `driftDatabase` from `package:drift_flutter` stores the database in
     // `getApplicationDocumentsDirectory()`.
-    return driftDatabase(name: 'my_database3');
+    return driftDatabase(
+      name: 'my_database',
+      native: const DriftNativeOptions
+      
+        databaseDirectory: getApplicationSupportDirectory,
+      ),
+      web: DriftWebOptions(
+        sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+        driftWorker: Uri.parse('drift_worker.js'),
+        onResult: (result) {
+          if (result.missingFeatures.isNotEmpty) {
+            debugPrint(
+              'Using ${result.chosenImplementation} due to unsupported '
+              'browser features: ${result.missingFeatures}',
+            );
+          }
+        },
+      ),
+    );
   }
 }
