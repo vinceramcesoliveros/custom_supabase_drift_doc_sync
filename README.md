@@ -1,4 +1,11 @@
-# custom_supabase_drift_sync
+# Custom Drift Synchronizatino Example
+
+This project showcases how you can easily sync your data (one-user data) across devices that are store using drift db. It achieve this by:
+
+- Anotation drift cases and providing special variables
+- Generating `SyncManager` that combines data from anotated classes and generates code that can be used with  `WatermelonDB` styled server DB functions.
+
+
 
 A new Flutter project.
 
