@@ -61,8 +61,8 @@ AppRouter appRouter(AppRouterRef ref) {
 @riverpod
 class SyncMangerP extends _$SyncMangerP {
   @override
-  SyncManager build() {
-    return SyncManager(
+  SyncManagerS build() {
+    return SyncManagerS(
       db: ref.watch(appDatabaseProvider),
       supabase: ref.watch(supabaseProvider),
       isar: ref.watch(isarProvider),

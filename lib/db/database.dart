@@ -14,7 +14,7 @@ extension DateTimeExtension on DateTimeColumn {
   }
 }
 
-@customAnnotation
+@customSync
 class Task extends Table {
   static String get serverTableName => "public.task";
 
@@ -38,7 +38,7 @@ class Task extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@customAnnotation
+@customSync
 class Project extends Table {
   static String get serverTableName => "public.project";
 
@@ -60,7 +60,7 @@ class Project extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@customAnnotation
+@customSync
 class Docup extends Table {
   static String get serverTableName => "public.doc_updates";
 

@@ -12,7 +12,7 @@ import 'package:uuid/uuid.dart';
 
 part 'sync_manager.sync.dart';
 
-@SyncAnnotation(classes: [Task, Project, Docup])
+@SyncManager(classes: [Task, Project, Docup])
 class SyncClass {
   const SyncClass();
 
@@ -27,7 +27,7 @@ class SyncClass {
       _$SyncClassCombinedStreams(db);
 }
 
-class SyncManager {
+class SyncManagerS {
   final AppDatabase db;
   final SupabaseClient supabase;
   final Isar isar;
@@ -37,7 +37,7 @@ class SyncManager {
   bool _extraSyncNeeded = false;
   StreamSubscription? _streamSubscription;
 
-  SyncManager({
+  SyncManagerS({
     required this.db,
     required this.supabase,
     required this.isar,
@@ -46,7 +46,7 @@ class SyncManager {
   }
 
   Future<void> _checkInitialLoginStatus() async {
-    // Replace this with your actual logic to check if the user is logged in
+    // Replace this with your actual logic to check if the user is logged in.
     final session = supabase.auth.currentSession;
     if (session != null) {
       signIn();

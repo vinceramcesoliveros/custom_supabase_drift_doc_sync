@@ -90,12 +90,12 @@ final sessionPProvider = NotifierProvider<SessionP, Option<Session>>.internal(
 );
 
 typedef _$SessionP = Notifier<Option<Session>>;
-String _$syncMangerPHash() => r'1935e55a94cb45f255a310844a82ede7c12f0144';
+String _$syncMangerPHash() => r'3b2500f68c7a85ab06b94fb1b274a5af44d6b7f8';
 
 /// See also [SyncMangerP].
 @ProviderFor(SyncMangerP)
 final syncMangerPProvider =
-    AutoDisposeNotifierProvider<SyncMangerP, SyncManager>.internal(
+    AutoDisposeNotifierProvider<SyncMangerP, SyncManagerS>.internal(
   SyncMangerP.new,
   name: r'syncMangerPProvider',
   debugGetCreateSourceHash:
@@ -104,6 +104,6 @@ final syncMangerPProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$SyncMangerP = AutoDisposeNotifier<SyncManager>;
+typedef _$SyncMangerP = AutoDisposeNotifier<SyncManagerS>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

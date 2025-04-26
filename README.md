@@ -1,23 +1,267 @@
 # Custom Drift Synchronizatino Example
 
-This project showcases how you can easily sync your data (one-user data) across devices that are store using drift db. It achieve this by:
+This project showcases two things:
+- How you can easily sync your data (one-user data) across devices that are store using drift db.
+- Showcase of synchronization of applowy editor content across devices with handling of merge conflicts using appflowy_editor_sync_plugin
 
+## The synchronization is achieved by:
+### Client
 - Anotation drift cases and providing special variables
-- Generating `SyncManager` that combines data from anotated classes and generates code that can be used with  `WatermelonDB` styled server DB functions.
+
+```dart
+@customSync // 1. Add customSync annotation
+class Task extends Table {
+  static String get serverTableName => "public.task"; // 2. specify server db table name with schema
+
+  TextColumn get id => text().clientDefault(() => const Uuid().v4())();
+  @JsonKey('created_at') // 3. Provide timstamp attributes a
+  DateTimeColumn get createdAt => dateTime()();
+  @JsonKey('updated_at') // 3. Provide timstamp attributes b
+  DateTimeColumn get updatedAt => dateTime()();
+  @JsonKey('deleted_at') // 3. Provide timstamp attributes c
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+  TextColumn get name => text()();
+  
+
+  // 4. Specify isRemote attribute
+  BoolColumn get isRemote => boolean().withDefault(const Constant(false))();
+
+  @JsonKey('project_id')
+  TextColumn get projectId => text()();
+  @JsonKey('user_id')
+  TextColumn get userId => text()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+```
+
+Define `SyncManager`
+- `SyncManager` combines data from anotated classes and generates code that can be used with  `WatermelonDB` styled server DB functions.
+```dart
+part 'sync_manager.sync.dart';
+// Specify tables to sync
+@SyncManager(classes: [Task, Project, Docup])
+class SyncClass {
+  const SyncClass();
+
+  Future<void> sync(Map<String, dynamic> changes, AppDatabase db) =>
+      _$SyncClassSync(changes, db);
+  Future<Map<String, dynamic>> getChanges(
+          DateTime lastSyncedAt, AppDatabase db, String currentInstanceId) =>
+      _$SyncClassGetChanges(lastSyncedAt, db, currentInstanceId);
+  List<String> syncedTables() => _$SyncClassSyncedTables();
+
+  Stream<List<dynamic>> getUpdateStreams(AppDatabase db) =>
+      _$SyncClassCombinedStreams(db);
+}
+```
+
+Then you can utilize provided functions for example like this to communicate with supabase:
+
+```dart
+class SyncManagerS {
+  final AppDatabase db;
+  final SupabaseClient supabase;
+  final Isar isar;
+  bool _isSyncing = false;
+  bool _isLoggedIn = false;
+  final String _currentInstanceId = const Uuid().v4();
+  bool _extraSyncNeeded = false;
+  StreamSubscription? _streamSubscription;
+
+  SyncManagerS({
+    required this.db,
+    required this.supabase,
+    required this.isar,
+  }) : super() {
+    _checkInitialLoginStatus();
+  }
+
+  Future<void> _checkInitialLoginStatus() async {
+    // Replace this with your actual logic to check if the user is logged in.
+    final session = supabase.auth.currentSession;
+    if (session != null) {
+      signIn();
+    }
+  }
+
+  Future<void> _synchronize() async {
+    await retry(
+      () => _synchronizeBase(),
+      retryIf: (e) => e is TimeoutException || e is PostgrestException,
+    );
+  }
+
+  void _listenOnTheServerUpdates() {
+    supabase.channel('db-changes').onAllSyncClassChanges(_currentInstanceId,
+            (payload) {
+      queueSyncDebounce();
+    })
+        .subscribe();
+  }
+
+  void _startListening() {
+    queueSync();
+    _listenOnLocalUpdates();
+    _listenOnTheServerUpdates();
+  }
+
+  void _listenOnLocalUpdates() {
+    final combinedStream = const SyncClass().getUpdateStreams(db);
+    _streamSubscription = combinedStream.listen((data) async {
+      final localChanges = await const SyncClass().getChanges(
+          _getLastPulledAt() ?? DateTime(2000), db, _currentInstanceId);
+      final isLocalChangesEmpty = localChanges.values.every((element) {
+        return (element as Map<String, dynamic>)
+            .values
+            .every((innerElement) => innerElement.isEmpty);
+      });
+      if (!isLocalChangesEmpty) {
+        queueSyncDebounce();
+      }
+    });
+  }
+
+  void queueSyncDebounce() {
+    EasyDebounce.debounce('sync', const Duration(milliseconds: 500), () {
+      queueSync();
+    });
+  }
+
+  Future<void> _synchronizeBase() async {
+    final lastPulledAt = _getLastPulledAt();
+    final now = DateTime.now();
+
+    // Pull changes from the server
+    final pullResponse = await retry(
+      () => supabase.rpc('pull_changes', params: {
+        'collections': const SyncClass().syncedTables(),
+        'last_pulled_at':
+            (lastPulledAt ?? DateTime(2000)).toUtc().toIso8601String(),
+      }),
+      retryIf: (e) => e is TimeoutException || e is PostgrestException,
+    );
+
+    final changes = pullResponse['changes'] as Map<String, dynamic>;
+    final timestamp = pullResponse['timestamp'] as int;
+
+    // Apply changes to the local database
+    await db.transaction(() async {
+      await const SyncClass().sync(changes, db);
+    });
+
+    // Push local changes to the server
+    final localChanges = await const SyncClass()
+        .getChanges(lastPulledAt ?? DateTime(2000), db, _currentInstanceId);
+    final isLocalChangesEmpty = localChanges.values.every((element) {
+      return (element as Map<String, dynamic>)
+          .values
+          .every((innerElement) => innerElement.isEmpty);
+    });
+    if (!isLocalChangesEmpty) {
+      final res = await supabase.rpc('push_changes', params: {
+        '_changes': localChanges,
+        'last_pulled_at': lastPulledAt?.toIso8601String(),
+      }).timeout(const Duration(seconds: 10));
+      _setLastPulledAt(DateTime.parse(res));
+    } else {
+      _setLastPulledAt(now.subtract(const Duration(minutes: 2)));
+    }
+
+    //TODO: Delete synced deletes from local db
+  }
+
+  void signIn() {
+    _isLoggedIn = true;
+    _startListening();
+  }
+
+  void signOut() {
+    _isLoggedIn = false;
+    _stopListening();
+  }
+
+  void _stopListening() {
+    _streamSubscription?.cancel();
+    _streamSubscription = null;
+  }
+
+  void queueSync() {
+    if (_isSyncing) {
+      _extraSyncNeeded = true;
+      return;
+    }
+
+    _isSyncing = true;
+    _synchronize().then((_) {
+      _isSyncing = false;
+      if (_extraSyncNeeded) {
+        _extraSyncNeeded = false;
+        queueSync(); // Trigger the extra sync
+      }
+    }).catchError((error) {
+      _isSyncing = false;
+      print('Sync failed: $error');
+    });
+  }
+
+  DateTime? _getLastPulledAt() {
+    final syncInfo = isar.syncInfos.get(1);
+    return syncInfo?.lastPulledAt;
+  }
+
+  void _setLastPulledAt(DateTime timestamp) async {
+    isar.write((isar) {
+      isar.syncInfos.put(SyncInfo(id: 1, lastPulledAt: timestamp));
+    });
+  }
+}
+```
 
 
 
-A new Flutter project.
 
-## Getting Started
+### Server
 
-This project is a starting point for a Flutter application.
+On the server you need to define two things:
+- RLS rules such as this:
+```sql
+alter policy "doc_updates_rls"
+on "public"."doc_updates"
+to authenticated
+using (
+  (( SELECT auth.uid() AS uid) = user_id)
+with check (
+  (( SELEC
+);
+```
 
-A few resources to get you started if this is your first Flutter project:
+In supabase these rules are then respected inside database functions as so simplify them.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Database functions:
+  - [push_changes](server/db_functions/push_changes.sql)
+    - uses [helper functions](server/db_functions/push_changes_helpers.sql)
+  - [pull_changes](server/db_functions/pull_changes.sql)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+
+You can just copy paste them into your project if you are synchronizing data for just one user. The implementation is generic and utilizes RLS rules.
+
+
+## Run this demo
+
+On supabase create a project and do these steps:
+- Insert tables with RLS from `generate_db.sql`
+- Add database fuctions from:
+    - `pull_changes.sql`
+    - `push_changes_helpers.sql`
+    - `push_changes.sql`
+
+Add to this project .env file with:
+```
+SUPABASE_URL=https://xxxxsupabase.co
+SUPABASE_ANON_KEY=xxxxxx
+SUPABASE_STORAGE_BUCKET=xxxx //Not used, but still provide it
+```
+
+Run the project :)
