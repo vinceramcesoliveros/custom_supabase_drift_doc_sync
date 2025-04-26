@@ -3,6 +3,8 @@ import 'package:custom_supabase_drift_sync/core/navigation/router.gr.dart';
 import 'package:custom_supabase_drift_sync/presentation/module/module.dart';
 import 'package:custom_supabase_drift_sync/presentation/pages/login_page/module.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:gap/gap.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 @RoutePage()
@@ -73,6 +75,8 @@ class LoginPage extends ConsumerWidget {
                               },
                         child: const Text('Sign Up'),
                       ),
+                      const Gap(16),
+                      _TestAccountInfoWidget(),
                     ],
                   ),
                 ),
@@ -80,5 +84,88 @@ class LoginPage extends ConsumerWidget {
             ),
           ),
         ));
+  }
+}
+
+class _TestAccountInfoWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    const email = 'test_account@gmail.com';
+    const password = 'test_account@gmail.com';
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          RichText(
+            textAlign: TextAlign.center,
+            text: TextSpan(
+              style: Theme.of(context).textTheme.bodyMedium,
+              children: const [
+                TextSpan(
+                  text: 'Don\'t want to create an account to test it?\n',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                TextSpan(text: 'Use this account:\n\n'),
+              ],
+            ),
+          ),
+          const Gap(4),
+          const _CopyableCredentialRow(label: 'Email', value: email),
+          const Gap(8),
+          const _CopyableCredentialRow(label: 'Password', value: password),
+        ],
+      ),
+    );
+  }
+}
+
+class _CopyableCredentialRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _CopyableCredentialRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              style: Theme.of(context).textTheme.bodyMedium,
+              children: [
+                TextSpan(
+                  text: '$label: ',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                TextSpan(text: value),
+              ],
+            ),
+          ),
+        ),
+        IconButton(
+          constraints: const BoxConstraints(maxHeight: 32, minWidth: 32),
+          padding: EdgeInsets.zero,
+          iconSize: 18,
+          icon: const Icon(Icons.copy),
+          onPressed: () {
+            Clipboard.setData(ClipboardData(text: value));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('$label copied to clipboard'),
+                duration: const Duration(seconds: 1),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+        ),
+      ],
+    );
   }
 }
