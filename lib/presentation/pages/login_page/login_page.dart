@@ -154,8 +154,9 @@ class _CopyableCredentialRow extends StatelessWidget {
           padding: EdgeInsets.zero,
           iconSize: 18,
           icon: const Icon(Icons.copy),
-          onPressed: () {
-            Clipboard.setData(ClipboardData(text: value));
+          onPressed: () async {
+            await Clipboard.setData(ClipboardData(text: value));
+            if (!context.mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('$label copied to clipboard'),

@@ -1,12 +1,11 @@
 import 'dart:async';
 
 import 'package:custom_supabase_drift_sync/db/database.dart';
-import 'package:custom_supabase_drift_sync/db/isar/sync_info_schema.dart';
 import 'package:custom_sync_drift_annotations/annotations.dart';
 import 'package:easy_debounce/easy_debounce.dart';
-import 'package:isar/isar.dart';
 import 'package:retry/retry.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase/supabase.dart';
 import 'package:uuid/uuid.dart';
 
@@ -30,7 +29,7 @@ class SyncClass {
 class SyncManagerS {
   final AppDatabase db;
   final SupabaseClient supabase;
-  final Isar isar;
+  final SharedPreferences sharedPrefs;
   bool _isSyncing = false;
   bool _isLoggedIn = false;
   final String _currentInstanceId = const Uuid().v4();
@@ -40,7 +39,7 @@ class SyncManagerS {
   SyncManagerS({
     required this.db,
     required this.supabase,
-    required this.isar,
+    required this.sharedPrefs,
   }) : super() {
     _checkInitialLoginStatus();
   }
@@ -121,21 +120,19 @@ class SyncManagerS {
   }
 
   Future<void> _synchronizeBase() async {
-    final lastPulledAt = _getLastPulledAt();
+    final lastPulledAt = _getLastPulledAt() ?? DateTime(2000);
     final now = DateTime.now();
 
     // Pull changes from the server
     final pullResponse = await retry(
       () => supabase.rpc('pull_changes', params: {
         'collections': const SyncClass().syncedTables(),
-        'last_pulled_at':
-            (lastPulledAt ?? DateTime(2000)).toUtc().toIso8601String(),
+        'last_pulled_at': (lastPulledAt).toUtc().toIso8601String(),
       }),
       retryIf: (e) => e is TimeoutException || e is PostgrestException,
     );
 
     final changes = pullResponse['changes'] as Map<String, dynamic>;
-    final timestamp = pullResponse['timestamp'] as int;
 
     // Apply changes to the local database
     await db.transaction(() async {
@@ -144,7 +141,7 @@ class SyncManagerS {
 
     // Push local changes to the server
     final localChanges = await const SyncClass()
-        .getChanges(lastPulledAt ?? DateTime(2000), db, _currentInstanceId);
+        .getChanges(lastPulledAt, db, _currentInstanceId);
     final isLocalChangesEmpty = localChanges.values.every((element) {
       return (element as Map<String, dynamic>)
           .values
@@ -153,7 +150,7 @@ class SyncManagerS {
     if (!isLocalChangesEmpty) {
       final res = await supabase.rpc('push_changes', params: {
         '_changes': localChanges,
-        'last_pulled_at': lastPulledAt?.toIso8601String(),
+        'last_pulled_at': lastPulledAt.toIso8601String(),
       }).timeout(const Duration(seconds: 10));
       _setLastPulledAt(DateTime.parse(res));
     } else {
@@ -197,14 +194,15 @@ class SyncManagerS {
     });
   }
 
+  String lastPulledAtKey = 'lastPulledAt';
+
+  /// Get lastPulledAt using SharedPreferences
   DateTime? _getLastPulledAt() {
-    final syncInfo = isar.syncInfos.get(1);
-    return syncInfo?.lastPulledAt;
+    final savedLastPulletAt = sharedPrefs.getString(lastPulledAtKey);
+    return savedLastPulletAt != null ? DateTime.parse(savedLastPulletAt) : null;
   }
 
   void _setLastPulledAt(DateTime timestamp) async {
-    isar.write((isar) {
-      isar.syncInfos.put(SyncInfo(id: 1, lastPulledAt: timestamp));
-    });
+    await sharedPrefs.setString(lastPulledAtKey, timestamp.toIso8601String());
   }
 }

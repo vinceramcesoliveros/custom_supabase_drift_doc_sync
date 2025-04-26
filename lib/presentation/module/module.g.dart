@@ -62,20 +62,22 @@ final supabaseProvider = AutoDisposeProvider<SupabaseClient>.internal(
 );
 
 typedef SupabaseRef = AutoDisposeProviderRef<SupabaseClient>;
-String _$isarHash() => r'1f4320c67e502585ab06a41bde3a44b46e4ed97f';
+String _$sharedPreferencesHash() => r'c7ff883eb4d0fa01ef5fca31ad330975edd22aef';
 
-/// See also [isar].
-@ProviderFor(isar)
-final isarProvider = AutoDisposeProvider<Isar>.internal(
-  isar,
-  name: r'isarProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$isarHash,
+/// See also [sharedPreferences].
+@ProviderFor(sharedPreferences)
+final sharedPreferencesProvider =
+    AutoDisposeProvider<SharedPreferences>.internal(
+  sharedPreferences,
+  name: r'sharedPreferencesProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$sharedPreferencesHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef IsarRef = AutoDisposeProviderRef<Isar>;
+typedef SharedPreferencesRef = AutoDisposeProviderRef<SharedPreferences>;
 String _$sessionPHash() => r'aad71147736bb676742b5bec9c77503307b2a59a';
 
 /// See also [SessionP].
@@ -90,7 +92,7 @@ final sessionPProvider = NotifierProvider<SessionP, Option<Session>>.internal(
 );
 
 typedef _$SessionP = Notifier<Option<Session>>;
-String _$syncMangerPHash() => r'3b2500f68c7a85ab06b94fb1b274a5af44d6b7f8';
+String _$syncMangerPHash() => r'5eb78e28e764ac72be391ffed997f7e73962de3a';
 
 /// See also [SyncMangerP].
 @ProviderFor(SyncMangerP)

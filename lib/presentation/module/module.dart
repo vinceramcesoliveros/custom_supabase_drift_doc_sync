@@ -1,9 +1,10 @@
 import 'package:custom_supabase_drift_sync/core/navigation/router.dart';
 import 'package:custom_supabase_drift_sync/db/database.dart';
 import 'package:custom_supabase_drift_sync/sync/sync_manager.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:isar/isar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'module.g.dart';
@@ -65,7 +66,7 @@ class SyncMangerP extends _$SyncMangerP {
     return SyncManagerS(
       db: ref.watch(appDatabaseProvider),
       supabase: ref.watch(supabaseProvider),
-      isar: ref.watch(isarProvider),
+      sharedPrefs: ref.watch(sharedPreferencesProvider),
     );
   }
 }
@@ -76,6 +77,6 @@ SupabaseClient supabase(SupabaseRef ref) {
 }
 
 @riverpod
-Isar isar(IsarRef ref) {
-  throw Exception('Isar is not provided');
+SharedPreferences sharedPreferences(Ref ref) {
+  throw Exception('SupabaseClient is not provided');
 }
