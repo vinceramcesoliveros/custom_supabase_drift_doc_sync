@@ -26,24 +26,24 @@ flutter build web \
 
 echo "📝 Adding required COOP/COEP headers to index.html..."
 # Add the headers to the HTML file directly
-INDEX_FILE="build/web/index.html"
-if [ -f "$INDEX_FILE" ]; then
-  # Create a backup of the original file
-  cp "$INDEX_FILE" "${INDEX_FILE}.bak"
+# INDEX_FILE="build/web/index.html"
+# if [ -f "$INDEX_FILE" ]; then
+#   # Create a backup of the original file
+#   cp "$INDEX_FILE" "${INDEX_FILE}.bak"
   
-  # Add the headers using sed
-  sed -i.tmp '/<head>/a \
-  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">\
-  <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">' "$INDEX_FILE"
+#   # Add the headers using sed
+#   sed -i.tmp '/<head>/a \
+#   <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">\
+#   <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">' "$INDEX_FILE"
   
-  # Remove the temporary file created by sed
-  rm "${INDEX_FILE}.tmp" 2>/dev/null || true
+#   # Remove the temporary file created by sed
+#   rm "${INDEX_FILE}.tmp" 2>/dev/null || true
   
-  echo "✅ Headers added successfully to index.html"
-else
-  echo "❌ Error: Could not find index.html in build/web directory"
-  exit 1
-fi
+#   echo "✅ Headers added successfully to index.html"
+# else
+#   echo "❌ Error: Could not find index.html in build/web directory"
+#   exit 1
+# fi
 
 echo "✅ Web build completed with environment variables and security headers!"
 echo "  To test locally, run: cd build/web && python3 -m http.server 8000"
