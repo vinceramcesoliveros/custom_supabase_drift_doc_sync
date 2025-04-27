@@ -7,7 +7,9 @@ DECLARE
     _purgatory BOOLEAN;
     _user_id UUID;
     _now_utc TIMESTAMP WITH TIME ZONE;
+    _sql_array TEXT[];
     _sql TEXT;
+    _stmt TEXT;
 BEGIN
     -- Log the input _changes
     RAISE LOG 'push_changes: Input _changes: %', _changes;
@@ -20,7 +22,7 @@ BEGIN
     RAISE LOG 'push_changes: User ID: %, Current UTC time: %', _user_id, _now_utc;
 
     -- Look in all collections that include at least one created or updated element
-    SELECT array_agg(key ORDER BY key)
+    SELECT array_agg(key)
     INTO _updated_collections
     FROM jsonb_each(_changes)
     WHERE (
@@ -44,7 +46,7 @@ BEGIN
                         SELECT 1 FROM %I.%I
                         WHERE deleted_at IS NULL
                         AND server_updated_at > $2
-                    )$f$, split_part(col, '.', 1), split_part(col, '.', 2)), E'\n')
+                    )$f$, split_part(col, '.', 1), split_part(col, '.', 2)), ' OR ')
             )
             FROM UNNEST(_updated_collections) col
             USING _user_id, last_pulled_at INTO _purgatory;
@@ -63,7 +65,7 @@ BEGIN
                         SELECT 1 FROM %I.%I
                         WHERE deleted_at IS NULL
                         AND server_created_at > $2
-                    )$f$, split_part(col, '.', 1), split_part(col, '.', 2)), E'\n')
+                    )$f$, split_part(col, '.', 1), split_part(col, '.', 2)), ' OR ')
             )
             FROM UNNEST(_updated_collections) col
             USING _user_id, last_pulled_at INTO _purgatory;
@@ -76,13 +78,18 @@ BEGIN
             END IF;
         END IF;
 
-        _sql := construct_insert_update_sql(_updated_collections, _changes);
+        -- Get array of SQL statements
+        _sql_array := construct_insert_update_sql(_updated_collections, _changes);
 
-        -- Log the constructed SQL for insert/update
-        RAISE LOG 'push_changes: Constructed SQL for insert/update: %', _sql;
-
-        -- Execute the constructed SQL
-        EXECUTE _sql USING _user_id, _now_utc, _changes;
+        -- Execute each SQL statement separately
+        FOREACH _stmt IN ARRAY _sql_array
+        LOOP
+            -- Log the statement being executed
+            RAISE LOG 'push_changes: Executing SQL: %', _stmt;
+            
+            -- Execute the statement
+            EXECUTE _stmt USING _user_id, _now_utc, _changes;
+        END LOOP;
     END IF;
 
     -- Delete all records with "deleted" values in one execution
@@ -96,22 +103,24 @@ BEGIN
     RAISE LOG 'push_changes: Collections to delete: %', _updated_collections;
 
     IF _updated_collections IS NOT NULL AND array_length(_updated_collections, 1) > 0 THEN
-        -- Construct the SQL for deleting records
-        SELECT string_agg(format($f$
-            UPDATE %I.%I
-            SET deleted_at = $2
-            FROM jsonb_array_elements_text((($3)->%1$L)->'deleted') del
-            WHERE id = del
-            AND deleted_at IS NULL;
-        $f$, split_part(collection, '.', 1), split_part(collection, '.', 2)), E'\n')
-        INTO _sql
-        FROM UNNEST(_updated_collections) collection;
-
-        -- Log the constructed SQL for delete statements
-        RAISE LOG 'push_changes: Constructed SQL for delete: %', _sql;
-
-        -- Execute the constructed SQL for delete
-        EXECUTE _sql USING _user_id, _now_utc, _changes;
+        -- Construct and execute each delete statement separately
+        FOREACH _sql IN ARRAY (
+            SELECT format($f$
+                UPDATE %I.%I
+                SET deleted_at = $2
+                FROM jsonb_array_elements_text((($3)->%L)->'deleted') del
+                WHERE id = del
+                AND deleted_at IS NULL
+            $f$, split_part(collection, '.', 1), split_part(collection, '.', 2), collection)
+            FROM UNNEST(_updated_collections) collection
+        )
+        LOOP
+            -- Log the delete statement being executed
+            RAISE LOG 'push_changes: Executing delete SQL: %', _sql;
+            
+            -- Execute the delete statement
+            EXECUTE _sql USING _user_id, _now_utc, _changes;
+        END LOOP;
     END IF;
 
     RETURN _now_utc;

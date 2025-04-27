@@ -108,7 +108,7 @@ class AppDatabase extends _$AppDatabase {
     // `driftDatabase` from `package:drift_flutter` stores the database in
     // `getApplicationDocumentsDirectory()`.
     return driftDatabase(
-      name: 'my_database',
+      name: 'my_database2',
       web: DriftWebOptions(
         sqlite3Wasm: Uri.parse('sqlite3.wasm'),
         driftWorker: Uri.parse('drift_worker.js'),

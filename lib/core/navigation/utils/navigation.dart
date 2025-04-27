@@ -17,7 +17,7 @@ class AuthGuard extends AutoRouteGuard {
       // if user is authenticated we continue
       resolver.next();
     } else {
-      resolver.redirect(const SignupRoute());
+      resolver.redirect(const LoginRoute());
     }
   }
 }

@@ -40,7 +40,7 @@ Define `SyncManager`
 - `SyncManager` combines data from anotated classes and generates code that can be used with  `WatermelonDB` styled server DB functions.
 ```dart
 part 'sync_manager.sync.dart';
-// Specify tables to sync
+// Specify tables to sync in - IN THE ORDER OF THEIR DEPENDENCIES
 @SyncManager(classes: [Task, Project, Docup])
 class SyncClass {
   const SyncClass();
@@ -56,6 +56,8 @@ class SyncClass {
       _$SyncClassCombinedStreams(db);
 }
 ```
+
+But provide the tables in the order of dependencies as this will determin the order in which they will be inserted.
 
 Then you can utilize provided functions for example like this to communicate with supabase:
 

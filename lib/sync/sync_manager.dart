@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:custom_supabase_drift_sync/core/error_handling.dart';
 import 'package:custom_supabase_drift_sync/db/database.dart';
 import 'package:custom_sync_drift_annotations/annotations.dart';
 import 'package:easy_debounce/easy_debounce.dart';
@@ -148,11 +149,16 @@ class SyncManagerS {
           .every((innerElement) => innerElement.isEmpty);
     });
     if (!isLocalChangesEmpty) {
-      final res = await supabase.rpc('push_changes', params: {
-        '_changes': localChanges,
-        'last_pulled_at': lastPulledAt.toIso8601String(),
-      }).timeout(const Duration(seconds: 10));
-      _setLastPulledAt(DateTime.parse(res));
+      try {
+        final res = await supabase.rpc('push_changes', params: {
+          '_changes': localChanges,
+          'last_pulled_at': lastPulledAt.toIso8601String(),
+        }).timeout(const Duration(seconds: 10));
+        _setLastPulledAt(DateTime.parse(res));
+      } catch (e, st) {
+        E.t.error(e, st);
+        print('Push changes failed: $e');
+      }
     } else {
       _setLastPulledAt(now.subtract(const Duration(minutes: 2)));
     }
