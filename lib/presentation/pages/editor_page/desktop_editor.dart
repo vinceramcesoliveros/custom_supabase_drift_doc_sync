@@ -1,4 +1,5 @@
 import 'package:appflowy_editor/appflowy_editor.dart';
+import 'package:custom_supabase_drift_sync/core/extensions/context_extension.dart';
 import 'package:custom_supabase_drift_sync/presentation/pages/editor_page/drag_to_reorder_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,8 +24,6 @@ class _DesktopEditorState extends State<DesktopEditor> {
 
   late final EditorScrollController editorScrollController;
 
-  late EditorStyle editorStyle;
-  late Map<String, BlockComponentBuilder> blockComponentBuilders;
   late List<CommandShortcutEvent> commandShortcuts;
 
   @override
@@ -36,8 +35,6 @@ class _DesktopEditorState extends State<DesktopEditor> {
       shrinkWrap: false,
     );
 
-    editorStyle = _buildDesktopEditorStyle();
-    blockComponentBuilders = _buildBlockComponentBuilders();
     commandShortcuts = _buildCommandShortcuts();
   }
 
@@ -53,8 +50,6 @@ class _DesktopEditorState extends State<DesktopEditor> {
   void reassemble() {
     super.reassemble();
 
-    editorStyle = _buildDesktopEditorStyle();
-    blockComponentBuilders = _buildBlockComponentBuilders();
     commandShortcuts = _buildCommandShortcuts();
   }
 
@@ -86,9 +81,9 @@ class _DesktopEditorState extends State<DesktopEditor> {
           editorState: editorState,
 
           editorScrollController: editorScrollController,
-          blockComponentBuilders: blockComponentBuilders,
+          blockComponentBuilders: _buildBlockComponentBuilders(context),
           commandShortcutEvents: commandShortcuts,
-          editorStyle: editorStyle,
+          editorStyle: _buildDesktopEditorStyle(context),
           enableAutoComplete: true,
           autoCompleteTextProvider: _buildAutoCompleteTextProvider,
           dropTargetStyle: const AppFlowyDropTargetStyle(color: Colors.red),
@@ -107,15 +102,18 @@ class _DesktopEditorState extends State<DesktopEditor> {
   }
 
   // showcase 1: customize the editor style.
-  EditorStyle _buildDesktopEditorStyle() {
+  EditorStyle _buildDesktopEditorStyle(BuildContext context) {
     return EditorStyle.desktop(
       cursorWidth: 2.0,
-      cursorColor: Colors.blue,
-      selectionColor: Colors.grey.shade300,
+      cursorColor: context.colorScheme.primary,
+      selectionColor: context.colorScheme.primary.withOpacity(0.3),
       textStyleConfiguration: TextStyleConfiguration(
-        text: GoogleFonts.poppins(fontSize: 16, color: Colors.black),
-        code: GoogleFonts.architectsDaughter(),
-        bold: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+        text: GoogleFonts.poppins(fontSize: 16, color: context.textColor),
+        code: GoogleFonts.architectsDaughter(
+          color: context.textColor,
+        ),
+        bold: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500, color: context.textColor),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 40),
       maxWidth: 640,
@@ -123,7 +121,8 @@ class _DesktopEditorState extends State<DesktopEditor> {
   }
 
   // showcase 2: customize the block style
-  Map<String, BlockComponentBuilder> _buildBlockComponentBuilders() {
+  Map<String, BlockComponentBuilder> _buildBlockComponentBuilders(
+      BuildContext context) {
     final map = {
       ...standardBlockComponentBuilderMap,
 
@@ -144,6 +143,7 @@ class _DesktopEditorState extends State<DesktopEditor> {
       textStyleBuilder: (level) => GoogleFonts.poppins(
         fontSize: levelToFontSize.elementAtOrNull(level - 1) ?? 14.0,
         fontWeight: FontWeight.w600,
+        color: context.textColor,
       ),
     );
     // customize the padding

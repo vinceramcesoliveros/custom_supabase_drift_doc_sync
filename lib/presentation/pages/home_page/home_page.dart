@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:custom_supabase_drift_sync/core/navigation/router.gr.dart';
+import 'package:custom_supabase_drift_sync/presentation/components/theme_button.dart';
 import 'package:custom_supabase_drift_sync/presentation/dialogs/add_project_dialog/add_project_dialog.dart';
 import 'package:custom_supabase_drift_sync/presentation/module/module.dart';
 import 'package:custom_supabase_drift_sync/presentation/module/projects_providers.dart';
@@ -16,6 +17,9 @@ class HomePage extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Home Page'),
+          actions: const [
+            ThemeButton(),
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {

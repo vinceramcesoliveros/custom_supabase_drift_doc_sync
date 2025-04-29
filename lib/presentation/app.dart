@@ -1,3 +1,4 @@
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:custom_supabase_drift_sync/presentation/module/module.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -15,12 +16,18 @@ class App extends HookConsumerWidget {
       //ref.read(supabaseConnectorPProvider);
       return null;
     }, []);
-    return MaterialApp.router(
-      title: 'Custom Sync Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      routerConfig: router.config(),
-    );
+    return AdaptiveTheme(
+        light: ThemeData.light(useMaterial3: true),
+        dark: ThemeData.dark(useMaterial3: true),
+        initial: AdaptiveThemeMode.system,
+        builder: (theme, darkTheme) {
+          return MaterialApp.router(
+            title: 'Custom Sync Flutter Demo',
+            theme: theme,
+            darkTheme: darkTheme,
+            routerConfig: router.config(),
+            debugShowCheckedModeBanner: false,
+          );
+        });
   }
 }

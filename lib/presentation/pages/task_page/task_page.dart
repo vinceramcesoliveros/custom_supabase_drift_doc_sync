@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:custom_supabase_drift_sync/core/navigation/router.gr.dart';
+import 'package:custom_supabase_drift_sync/presentation/components/theme_button.dart';
 import 'package:custom_supabase_drift_sync/presentation/module/task_providers.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,9 @@ class TaskPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Task Page"),
+        actions: const [
+          ThemeButton(),
+        ],
       ),
       body: Column(
         children: [

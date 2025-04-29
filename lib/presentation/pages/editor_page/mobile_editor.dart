@@ -1,13 +1,13 @@
 import 'package:appflowy_editor/appflowy_editor.dart';
+import 'package:custom_supabase_drift_sync/core/extensions/context_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:universal_platform/universal_platform.dart';
 
 class MobileEditor extends StatefulWidget {
-  const MobileEditor({super.key, required this.editorState, this.editorStyle});
+  const MobileEditor({super.key, required this.editorState});
 
   final EditorState editorState;
-  final EditorStyle? editorStyle;
 
   @override
   State<MobileEditor> createState() => _MobileEditorState();
@@ -18,9 +18,6 @@ class _MobileEditorState extends State<MobileEditor> {
 
   late final EditorScrollController editorScrollController;
 
-  late EditorStyle editorStyle;
-  late Map<String, BlockComponentBuilder> blockComponentBuilders;
-
   @override
   void initState() {
     super.initState();
@@ -29,17 +26,11 @@ class _MobileEditorState extends State<MobileEditor> {
       editorState: editorState,
       shrinkWrap: false,
     );
-
-    editorStyle = _buildMobileEditorStyle();
-    blockComponentBuilders = _buildBlockComponentBuilders();
   }
 
   @override
   void reassemble() {
     super.reassemble();
-
-    editorStyle = _buildMobileEditorStyle();
-    blockComponentBuilders = _buildBlockComponentBuilders();
   }
 
   @override
@@ -80,10 +71,10 @@ class _MobileEditorState extends State<MobileEditor> {
                 );
               },
               child: AppFlowyEditor(
-                editorStyle: editorStyle,
+                editorStyle: _buildMobileEditorStyle(context),
                 editorState: editorState,
                 editorScrollController: editorScrollController,
-                blockComponentBuilders: blockComponentBuilders,
+                blockComponentBuilders: _buildBlockComponentBuilders(context),
                 showMagnifier: true,
                 // showcase 3: customize the header and footer.
                 // header: Padding(
@@ -100,15 +91,15 @@ class _MobileEditorState extends State<MobileEditor> {
   }
 
   // showcase 1: customize the editor style.
-  EditorStyle _buildMobileEditorStyle() {
+  EditorStyle _buildMobileEditorStyle(BuildContext context) {
     return EditorStyle.mobile(
       textScaleFactor: 1.0,
-      cursorColor: const Color.fromARGB(255, 134, 46, 247),
-      dragHandleColor: const Color.fromARGB(255, 134, 46, 247),
-      selectionColor: const Color.fromARGB(50, 134, 46, 247),
+      cursorColor: context.colorScheme.primary,
+      dragHandleColor: context.colorScheme.primary,
+      selectionColor: context.colorScheme.primary.withOpacity(0.3),
       textStyleConfiguration: TextStyleConfiguration(
-        text: GoogleFonts.poppins(fontSize: 14, color: Colors.black),
-        code: GoogleFonts.sourceCodePro(backgroundColor: Colors.grey.shade200),
+        text: GoogleFonts.poppins(fontSize: 14, color: context.textColor),
+        code: GoogleFonts.sourceCodePro(color: context.textColor),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       magnifierSize: const Size(144, 96),
@@ -121,7 +112,8 @@ class _MobileEditorState extends State<MobileEditor> {
   }
 
   // showcase 2: customize the block style
-  Map<String, BlockComponentBuilder> _buildBlockComponentBuilders() {
+  Map<String, BlockComponentBuilder> _buildBlockComponentBuilders(
+      BuildContext context) {
     final map = {...standardBlockComponentBuilderMap};
     // customize the heading block component
     final levelToFontSize = [24.0, 22.0, 20.0, 18.0, 16.0, 14.0];
@@ -129,6 +121,7 @@ class _MobileEditorState extends State<MobileEditor> {
       textStyleBuilder: (level) => GoogleFonts.poppins(
         fontSize: levelToFontSize.elementAtOrNull(level - 1) ?? 14.0,
         fontWeight: FontWeight.w600,
+        color: context.textColor,
       ),
     );
     map[ParagraphBlockKeys.type] = ParagraphBlockComponentBuilder(

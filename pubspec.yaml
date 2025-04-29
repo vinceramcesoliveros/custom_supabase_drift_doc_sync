@@ -84,8 +84,9 @@ dependencies:
   appflowy_editor_sync_plugin:
     git:
       url: https://github.com/Musta-Pollo/appflowy_editor_sync_plugin.git
-      ref: bca58c66f7cc95a05a43ce96e508d68c1106dfa3
+      ref: 9e31e2bbb3eb26291cb79f34d6c66dc37ae45b2c
   flutter_dotenv: ^5.2.1
+  adaptive_theme: ^3.7.0
 
 dev_dependencies:
   flutter_test:

@@ -2,6 +2,7 @@ import 'package:animated_list_plus/animated_list_plus.dart';
 import 'package:animated_list_plus/transitions.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:custom_supabase_drift_sync/core/navigation/router.gr.dart';
+import 'package:custom_supabase_drift_sync/presentation/components/theme_button.dart';
 import 'package:custom_supabase_drift_sync/presentation/dialogs/add_task_dialog/add_task_dialog.dart';
 import 'package:custom_supabase_drift_sync/presentation/module/module.dart';
 import 'package:custom_supabase_drift_sync/presentation/module/projects_providers.dart';
@@ -29,6 +30,9 @@ class ProjectPage extends ConsumerWidget {
             );
           },
         ),
+        actions: const [
+          ThemeButton(),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

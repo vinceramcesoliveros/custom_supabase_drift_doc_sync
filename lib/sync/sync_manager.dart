@@ -115,7 +115,8 @@ class SyncManagerS {
   }
 
   void queueSyncDebounce() {
-    EasyDebounce.debounce('sync', const Duration(milliseconds: 500), () {
+    EasyDebounce.debounce('sync', const Duration(milliseconds: 1500), () {
+      E.t.debug('Debounce trigger sync');
       queueSync();
     });
   }
@@ -125,13 +126,10 @@ class SyncManagerS {
     final now = DateTime.now();
 
     // Pull changes from the server
-    final pullResponse = await retry(
-      () => supabase.rpc('pull_changes', params: {
-        'collections': const SyncClass().syncedTables(),
-        'last_pulled_at': (lastPulledAt).toUtc().toIso8601String(),
-      }),
-      retryIf: (e) => e is TimeoutException || e is PostgrestException,
-    );
+    final pullResponse = await supabase.rpc('pull_changes', params: {
+      'collections': const SyncClass().syncedTables(),
+      'last_pulled_at': (lastPulledAt).toUtc().toIso8601String(),
+    });
 
     final changes = pullResponse['changes'] as Map<String, dynamic>;
 
@@ -154,13 +152,13 @@ class SyncManagerS {
           '_changes': localChanges,
           'last_pulled_at': lastPulledAt.toIso8601String(),
         }).timeout(const Duration(seconds: 10));
-        _setLastPulledAt(DateTime.parse(res));
+        await _setLastPulledAt(DateTime.parse(res));
       } catch (e, st) {
         E.t.error(e, st);
         print('Push changes failed: $e');
       }
     } else {
-      _setLastPulledAt(now.subtract(const Duration(minutes: 2)));
+      await _setLastPulledAt(now.subtract(const Duration(minutes: 2)));
     }
 
     //TODO: Delete synced deletes from local db
@@ -183,20 +181,27 @@ class SyncManagerS {
 
   void queueSync() {
     if (_isSyncing) {
+      E.t.debug('Sync already in progress');
       _extraSyncNeeded = true;
       return;
     }
 
     _isSyncing = true;
+    E.t.debug('Sync started');
     _synchronize().then((_) {
+      E.t.debug('Sync completed');
       _isSyncing = false;
+
       if (_extraSyncNeeded) {
+        E.t.debug('Extra sync needed');
         _extraSyncNeeded = false;
-        queueSync(); // Trigger the extra sync
+        Future.delayed(const Duration(milliseconds: 150), () {
+          queueSync();
+        });
       }
-    }).catchError((error) {
+    }).catchError((error, st) {
       _isSyncing = false;
-      print('Sync failed: $error');
+      E.t.error(error, st);
     });
   }
 
@@ -208,7 +213,7 @@ class SyncManagerS {
     return savedLastPulletAt != null ? DateTime.parse(savedLastPulletAt) : null;
   }
 
-  void _setLastPulledAt(DateTime timestamp) async {
+  Future<void> _setLastPulledAt(DateTime timestamp) async {
     await sharedPrefs.setString(lastPulledAtKey, timestamp.toIso8601String());
   }
 }

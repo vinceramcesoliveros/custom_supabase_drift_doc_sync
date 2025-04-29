@@ -313,7 +313,7 @@ class _ProjectPProviderElement
   String get projectId => (origin as ProjectPProvider).projectId;
 }
 
-String _$projectTaskIdsPHash() => r'3a19b169f318d7770dd41461eec62de618ba275f';
+String _$projectTaskIdsPHash() => r'baabcd2ec5d4c2daac56b980f5b1456b0d3fff57';
 
 abstract class _$ProjectTaskIdsP
     extends BuildlessAutoDisposeStreamNotifier<IList<String>> {

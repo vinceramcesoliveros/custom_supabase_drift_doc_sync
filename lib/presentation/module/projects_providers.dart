@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:custom_supabase_drift_sync/db/database.dart';
 import 'package:custom_supabase_drift_sync/presentation/module/module.dart';
 import 'package:dartx/dartx.dart';
+import 'package:drift/drift.dart';
 import 'package:fast_immutable_collections/fast_immutable_collections.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -45,8 +46,9 @@ class ProjectTaskIdsP extends _$ProjectTaskIdsP {
     final appdb = ref.watch(appDatabaseProvider);
 
     final query = appdb.selectOnly(appdb.task)
-      ..addColumns([appdb.task.id])
-      ..where(appdb.task.projectId.equals(projectId));
+      ..addColumns([appdb.task.id, appdb.task.name])
+      ..where(appdb.task.projectId.equals(projectId))
+      ..orderBy([OrderingTerm.desc(appdb.task.name)]);
 
     await for (final event
         in query.map((row) => row.read(appdb.task.id)).watch()) {
