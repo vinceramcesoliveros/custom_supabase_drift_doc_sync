@@ -195,7 +195,7 @@ class SyncManagerS {
       if (_extraSyncNeeded) {
         E.t.debug('Extra sync needed');
         _extraSyncNeeded = false;
-        Future.delayed(const Duration(milliseconds: 150), () {
+        Future.delayed(const Duration(milliseconds: 800), () {
           queueSync();
         });
       }
