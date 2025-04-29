@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:custom_supabase_drift_sync/core/extensions/context_extension.dart';
 import 'package:custom_supabase_drift_sync/core/navigation/router.gr.dart';
 import 'package:custom_supabase_drift_sync/presentation/module/module.dart';
 import 'package:custom_supabase_drift_sync/presentation/pages/login_page/module.dart';
@@ -96,7 +97,7 @@ class _TestAccountInfoWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: context.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
