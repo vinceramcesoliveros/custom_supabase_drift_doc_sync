@@ -1,3 +1,4 @@
+import 'package:custom_supabase_drift_sync/core/navigation/router.gr.dart';
 import 'package:custom_supabase_drift_sync/domain/auth/sign_in_state.dart';
 import 'package:custom_supabase_drift_sync/presentation/module/module.dart';
 import 'package:fpdart/fpdart.dart';
@@ -37,6 +38,9 @@ class SignInP extends _$SignInP {
         ref
             .read(sessionPProvider.notifier)
             .setSession(Option.fromNullable(response.session));
+        final appRouter = ref.read(appRouterProvider);
+        await Future.delayed(const Duration(milliseconds: 500));
+        appRouter.navigate(const HomeRoute());
       }
     } on AuthException catch (e) {
       state = state.copyWith(isFailure: true, errorMessage: e.message);

@@ -169,9 +169,19 @@ class SyncManagerS {
     _startListening();
   }
 
-  void signOut() {
+  void signOut() async {
     _isLoggedIn = false;
     _stopListening();
+
+    // Clear db
+    await db.transaction(() async {
+      await db.delete(db.docup).go();
+      await db.delete(db.task).go();
+      await db.delete(db.project).go();
+    });
+
+    // set lastPulledAt = null
+    await sharedPrefs.remove(lastPulledAtKey);
   }
 
   void _stopListening() {

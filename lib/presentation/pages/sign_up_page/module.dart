@@ -39,7 +39,9 @@ class SignUpP extends _$SignUpP {
         ref
             .read(sessionPProvider.notifier)
             .setSession(Option.fromNullable(response.session));
-        ref.read(appRouterProvider).navigate(const HomeRoute());
+        final appRouter = ref.read(appRouterProvider);
+        await Future.delayed(const Duration(milliseconds: 500));
+        appRouter.navigate(const HomeRoute());
       }
     } on AuthException catch (e) {
       state = state.copyWith(isFailure: true, errorMessage: e.message);
