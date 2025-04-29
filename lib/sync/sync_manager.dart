@@ -115,7 +115,7 @@ class SyncManagerS {
   }
 
   void queueSyncDebounce() {
-    EasyDebounce.debounce('sync', const Duration(milliseconds: 1500), () {
+    EasyDebounce.debounce('sync', const Duration(milliseconds: 1000), () {
       E.t.debug('Debounce trigger sync');
       queueSync();
     });
@@ -150,7 +150,7 @@ class SyncManagerS {
       try {
         final res = await supabase.rpc('push_changes', params: {
           '_changes': localChanges,
-          'last_pulled_at': lastPulledAt.toIso8601String(),
+          'last_pulled_at': now.toIso8601String(),
         }).timeout(const Duration(seconds: 10));
         await _setLastPulledAt(DateTime.parse(res));
       } catch (e, st) {
