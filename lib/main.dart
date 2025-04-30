@@ -5,6 +5,7 @@ import 'package:custom_supabase_drift_sync/core/error_handling.dart';
 import 'package:custom_supabase_drift_sync/db/database.dart';
 import 'package:custom_supabase_drift_sync/db/supabase/supabase_helpers.dart';
 import 'package:custom_supabase_drift_sync/presentation/app.dart';
+import 'package:custom_supabase_drift_sync/presentation/app_inicialization.dart';
 import 'package:custom_supabase_drift_sync/presentation/module/module.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +45,7 @@ void main() async {
           talker: E.t,
         ),
       ],
-      child: const App(),
+      child: const AppInicialization(child: App()),
     ),
   );
 }

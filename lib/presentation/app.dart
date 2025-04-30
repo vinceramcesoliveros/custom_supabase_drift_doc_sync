@@ -15,11 +15,6 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
-    // Initialize providers
-    ref.read(authStateProvider);
-    ref.read(syncMangerPProvider);
-    //ref.read(supabaseConnectorPProvider);
   }
 
   @override
