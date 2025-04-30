@@ -87,6 +87,7 @@ dependencies:
       ref: 6553a341d70bfe9029a7af766251bb6a9ae13b54
   flutter_dotenv: ^5.2.1
   adaptive_theme: ^3.7.0
+  universal_platform: ^1.1.0
 
 dev_dependencies:
   flutter_test:

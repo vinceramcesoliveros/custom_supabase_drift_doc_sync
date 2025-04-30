@@ -4,6 +4,7 @@ import 'package:custom_sync_drift_annotations/annotations.dart';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:universal_platform/universal_platform.dart';
 import 'package:uuid/uuid.dart';
 
 part 'database.classsync.dart';
@@ -107,8 +108,15 @@ class AppDatabase extends _$AppDatabase {
   static QueryExecutor _openConnection() {
     // `driftDatabase` from `package:drift_flutter` stores the database in
     // `getApplicationDocumentsDirectory()`.
+
+    // Currently having multiple tabs open in the same browser is not supported.
+    // So it is important to have unique database names for each tab.
+    final dbName = UniversalPlatform.isWeb
+        ? 'db_name ${const Uuid().v4()}'
+        : 'my_database2';
+
     return driftDatabase(
-      name: 'my_database2',
+      name: dbName,
       web: DriftWebOptions(
         sqlite3Wasm: Uri.parse('sqlite3.wasm'),
         driftWorker: Uri.parse('drift_worker.js'),
