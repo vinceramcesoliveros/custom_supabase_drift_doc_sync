@@ -77,19 +77,22 @@ Then you can utilize the provided functions, for example like this to communicat
 class SyncManagerS {
   final AppDatabase db;
   final SupabaseClient supabase;
-  final Isar isar;
+  final SharedPreferences basicSharePrefs;
+  late final TabSeparateSharedPreferences sharedPrefs;
   bool _isSyncing = false;
   bool _isLoggedIn = false;
   final String _currentInstanceId = const Uuid().v4();
   bool _extraSyncNeeded = false;
   StreamSubscription? _streamSubscription;
+  StreamSubscription<InternetStatus>? _connectionSubscription;
 
   SyncManagerS({
     required this.db,
     required this.supabase,
-    required this.isar,
+    required this.basicSharePrefs,
   }) : super() {
     _checkInitialLoginStatus();
+    sharedPrefs = TabSeparateSharedPreferences.getInstance(basicSharePrefs);
   }
 
   Future<void> _checkInitialLoginStatus() async {
@@ -101,24 +104,26 @@ class SyncManagerS {
   }
 
   Future<void> _synchronize() async {
-    await retry(
+    await sequenceRetry(
       () => _synchronizeBase(),
-      retryIf: (e) => e is TimeoutException || e is PostgrestException,
     );
   }
 
   void _listenOnTheServerUpdates() {
     supabase.channel('db-changes').onAllSyncClassChanges(_currentInstanceId,
-            (payload) {
+        (payload) {
       queueSyncDebounce();
-    })
-        .subscribe();
+    }).subscribe();
+  }
+
+  void _startListeningOnInternetChanges() {
   }
 
   void _startListening() {
     queueSync();
     _listenOnLocalUpdates();
     _listenOnTheServerUpdates();
+    _startListeningOnInternetChanges();
   }
 
   void _listenOnLocalUpdates() {
@@ -138,27 +143,23 @@ class SyncManagerS {
   }
 
   void queueSyncDebounce() {
-    EasyDebounce.debounce('sync', const Duration(milliseconds: 500), () {
+    EasyDebounce.debounce('sync', const Duration(milliseconds: 1000), () {
+      E.t.debug('Debounce trigger sync');
       queueSync();
     });
   }
 
   Future<void> _synchronizeBase() async {
-    final lastPulledAt = _getLastPulledAt();
+    final lastPulledAt = _getLastPulledAt() ?? DateTime(2000);
     final now = DateTime.now();
 
     // Pull changes from the server
-    final pullResponse = await retry(
-      () => supabase.rpc('pull_changes', params: {
-        'collections': const SyncClass().syncedTables(),
-        'last_pulled_at':
-            (lastPulledAt ?? DateTime(2000)).toUtc().toIso8601String(),
-      }),
-      retryIf: (e) => e is TimeoutException || e is PostgrestException,
-    );
+    final pullResponse = await supabase.rpc('pull_changes', params: {
+      'collections': const SyncClass().syncedTables(),
+      'last_pulled_at': (lastPulledAt).toUtc().toIso8601String(),
+    });
 
     final changes = pullResponse['changes'] as Map<String, dynamic>;
-    final timestamp = pullResponse['timestamp'] as int;
 
     // Apply changes to the local database
     await db.transaction(() async {
@@ -167,20 +168,25 @@ class SyncManagerS {
 
     // Push local changes to the server
     final localChanges = await const SyncClass()
-        .getChanges(lastPulledAt ?? DateTime(2000), db, _currentInstanceId);
+        .getChanges(lastPulledAt, db, _currentInstanceId);
     final isLocalChangesEmpty = localChanges.values.every((element) {
       return (element as Map<String, dynamic>)
           .values
           .every((innerElement) => innerElement.isEmpty);
     });
     if (!isLocalChangesEmpty) {
-      final res = await supabase.rpc('push_changes', params: {
-        '_changes': localChanges,
-        'last_pulled_at': lastPulledAt?.toIso8601String(),
-      }).timeout(const Duration(seconds: 10));
-      _setLastPulledAt(DateTime.parse(res));
+      try {
+        final res = await supabase.rpc('push_changes', params: {
+          '_changes': localChanges,
+          'last_pulled_at': now.toIso8601String(),
+        }).timeout(const Duration(seconds: 10));
+        await _setLastPulledAt(DateTime.parse(res));
+      } catch (e, st) {
+        E.t.error(e, st);
+        print('Push changes failed: $e');
+      }
     } else {
-      _setLastPulledAt(now.subtract(const Duration(minutes: 2)));
+      await _setLastPulledAt(now.subtract(const Duration(minutes: 2)));
     }
 
     //TODO: Delete synced deletes from local db
@@ -191,46 +197,53 @@ class SyncManagerS {
     _startListening();
   }
 
-  void signOut() {
-    _isLoggedIn = false;
-    _stopListening();
+  void signOut() async {
+    ...
   }
 
   void _stopListening() {
-    _streamSubscription?.cancel();
-    _streamSubscription = null;
+    ...
   }
 
   void queueSync() {
     if (_isSyncing) {
+      E.t.debug('Sync already in progress');
       _extraSyncNeeded = true;
       return;
     }
 
     _isSyncing = true;
+    E.t.debug('Sync started');
     _synchronize().then((_) {
+      E.t.debug('Sync completed');
       _isSyncing = false;
+
       if (_extraSyncNeeded) {
+        E.t.debug('Extra sync needed, scheduling first retry in 800ms');
         _extraSyncNeeded = false;
-        queueSync(); // Trigger the extra sync
+        ...
       }
-    }).catchError((error) {
+    }).catchError((error, st) {
       _isSyncing = false;
-      print('Sync failed: $error');
+      E.t.error(error, st);
     });
   }
 
+  String lastPulledAtKey = 'lastPulledAt';
+
+  /// Get lastPulledAt using SharedPreferences
   DateTime? _getLastPulledAt() {
-    final syncInfo = isar.syncInfos.get(1);
-    return syncInfo?.lastPulledAt;
+    ...
   }
 
-  void _setLastPulledAt(DateTime timestamp) async {
-    isar.write((isar) {
-      isar.syncInfos.put(SyncInfo(id: 1, lastPulledAt: timestamp));
-    });
+  Future<void> _setLastPulledAt(DateTime timestamp) async {
+    ....
   }
+
+  void dispose() {
+    ...
 }
+
 ```
 
 
