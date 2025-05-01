@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:custom_supabase_drift_sync/core/error_handling.dart';
 import 'package:custom_supabase_drift_sync/db/database.dart';
+import 'package:custom_supabase_drift_sync/db/tab_separate_shared_preferences.dart';
 import 'package:custom_sync_drift_annotations/annotations.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:retry/retry.dart';
@@ -30,7 +31,8 @@ class SyncClass {
 class SyncManagerS {
   final AppDatabase db;
   final SupabaseClient supabase;
-  final SharedPreferences sharedPrefs;
+  final SharedPreferences basicSharePrefs;
+  late final TabSeparateSharedPreferences sharedPrefs;
   bool _isSyncing = false;
   bool _isLoggedIn = false;
   final String _currentInstanceId = const Uuid().v4();
@@ -40,9 +42,10 @@ class SyncManagerS {
   SyncManagerS({
     required this.db,
     required this.supabase,
-    required this.sharedPrefs,
+    required this.basicSharePrefs,
   }) : super() {
     _checkInitialLoginStatus();
+    sharedPrefs = TabSeparateSharedPreferences.getInstance(basicSharePrefs);
   }
 
   Future<void> _checkInitialLoginStatus() async {
@@ -62,34 +65,9 @@ class SyncManagerS {
 
   void _listenOnTheServerUpdates() {
     supabase.channel('db-changes').onAllSyncClassChanges(_currentInstanceId,
-            (payload) {
+        (payload) {
       queueSyncDebounce();
-    })
-        //.onPostgresChanges(
-        //    event: PostgresChangeEvent.all,
-        //    schema: 'public',
-        //    table: 'task',
-        //    filter: PostgresChangeFilter(
-        //      type: PostgresChangeFilterType.neq,
-        //      column: 'instance_id',
-        //      value: _currentInstanceId,
-        //    ),
-        //    callback: (payload) {
-        //      queueSyncDebounce();
-        //    })
-        //.onPostgresChanges(
-        //    event: PostgresChangeEvent.all,
-        //    schema: 'public',
-        //    table: 'project',
-        //    filter: PostgresChangeFilter(
-        //      type: PostgresChangeFilterType.neq,
-        //      column: 'instance_id',
-        //      value: _currentInstanceId,
-        //    ),
-        //    callback: (payload) {
-        //      queueSyncDebounce();
-        //    })
-        .subscribe();
+    }).subscribe();
   }
 
   void _startListening() {

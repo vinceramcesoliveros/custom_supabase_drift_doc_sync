@@ -66,7 +66,7 @@ class SyncMangerP extends _$SyncMangerP {
     return SyncManagerS(
       db: ref.watch(appDatabaseProvider),
       supabase: ref.watch(supabaseProvider),
-      sharedPrefs: ref.watch(sharedPreferencesProvider),
+      basicSharePrefs: ref.watch(sharedPreferencesProvider),
     );
   }
 }
