@@ -9,6 +9,8 @@ This project showcases two things:
 
 Example of how this works in the browser. But the same applies for native platforms. The browser only has some workarounds viz: `database.dart`, `tab_separated_shared_preferences.dart`:
 
+Link: https://habitmaster-e52e9.web.app/
+
 
 https://github.com/user-attachments/assets/274e50de-ac70-42b1-9a43-083a8f0db7ac
 
