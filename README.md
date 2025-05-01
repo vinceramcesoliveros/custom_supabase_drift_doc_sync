@@ -6,7 +6,13 @@ This project showcases two things:
 
 ## Demo
 
-Example how this works in the browser:
+Example of how this works in the browser. But the same applies for native platforms. The browser only has some workerounds viz: `database.dart`, `tab_separated_shared_preferences.dart`:
+
+https://github.com/Musta-Pollo/custom_supabase_drift_doc_sync/blob/main/demo_recording.mp4
+
+**Notes:**
+The demo is slightly longer because it is a live demonstration and involves turning the Wi-Fi on and off. This same demo functions well on all other Flutter platforms and Wear OS if properly configured.
+
 
 
 
