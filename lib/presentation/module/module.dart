@@ -1,3 +1,4 @@
+import 'package:custom_supabase_drift_sync/core/error_handling.dart';
 import 'package:custom_supabase_drift_sync/core/navigation/router.dart';
 import 'package:custom_supabase_drift_sync/db/database.dart';
 import 'package:custom_supabase_drift_sync/sync/sync_manager.dart';
@@ -39,14 +40,31 @@ Stream<AuthState> authState(AuthStateRef ref) async* {
   await for (final data in Supabase.instance.client.auth.onAuthStateChange) {
     final AuthChangeEvent event = data.event;
     if (event == AuthChangeEvent.signedIn) {
+      E.t.debug('User signed in');
       // Connect to PowerSync when the user is signed in
       //ref.read(supabaseConnectorPProvider.notifier).signIn();
+      await Future.delayed(const Duration(milliseconds: 200));
+
       ref.read(syncMangerPProvider).signIn();
+      final currentSession = data.session;
+      if (currentSession != null) {
+        ref
+            .read(sessionPProvider.notifier)
+            .setSession(Option.of(currentSession));
+      }
     } else if (event == AuthChangeEvent.signedOut) {
+      E.t.debug('User signed out');
+
+      await Future.delayed(const Duration(milliseconds: 200));
+
       // Implicit sign out - disconnect, but don't delete data
       //ref.read(supabaseConnectorPProvider.notifier).signOut();
       ref.read(syncMangerPProvider).signOut();
+
+      ref.read(sessionPProvider.notifier).setSession(const Option.none());
     } else if (event == AuthChangeEvent.tokenRefreshed) {
+      E.t.debug('Token refreshed');
+      ref.read(syncMangerPProvider).signIn();
       // Supabase token refreshed - trigger token refresh for PowerSync.
       //ref.read(supabaseConnectorPProvider.notifier).tokenRefreshed();
     }
