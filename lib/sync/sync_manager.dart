@@ -1,12 +1,12 @@
 import 'dart:async';
 
+import 'package:custom_supabase_drift_sync/core/constant_retry.dart';
 import 'package:custom_supabase_drift_sync/core/error_handling.dart';
 import 'package:custom_supabase_drift_sync/db/database.dart';
 import 'package:custom_supabase_drift_sync/db/tab_separate_shared_preferences.dart';
 import 'package:custom_sync_drift_annotations/annotations.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
-import 'package:retry/retry.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase/supabase.dart';
@@ -59,9 +59,8 @@ class SyncManagerS {
   }
 
   Future<void> _synchronize() async {
-    await retry(
+    await sequenceRetry(
       () => _synchronizeBase(),
-      retryIf: (e) => e is TimeoutException || e is PostgrestException,
     );
   }
 
