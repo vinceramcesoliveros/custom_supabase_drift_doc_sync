@@ -1,12 +1,21 @@
-# Custom Drift Synchronizatino Example
+# Custom Drift Synchronization Example
 
 This project showcases two things:
-- How you can easily sync your data (one-user data) across devices that are store using drift db.
-- Showcase of synchronization of applowy editor content across devices with handling of merge conflicts using appflowy_editor_sync_plugin
+- How can you easily sync your data (one-user data) across devices that are stored using Drift DB?
+- Showcase of synchronization of appflowy editor content across devices with handling of merge conflicts using appflowy_editor_sync_plugin
+
+## Demo
+
+Example how this works in the browser:
+
+
+
+**Notes:**
+The demo is slightly longer because it is a live demonstration and involves turning the Wi-Fi on and off. This same demo functions well on all other Flutter platforms and Wear OS if properly configured.
 
 ## The synchronization is achieved by:
 ### Client
-- Anotation drift cases and providing special variables
+- Annotation drift cases and providing special variables
 
 ```dart
 @customSync // 1. Add customSync annotation
@@ -14,16 +23,16 @@ class Task extends Table {
   static String get serverTableName => "public.task"; // 2. specify server db table name with schema
 
   TextColumn get id => text().clientDefault(() => const Uuid().v4())();
-  @JsonKey('created_at') // 3. Provide timstamp attributes a
+  @JsonKey('created_at') // 3. Provide timestamp attributes a
   DateTimeColumn get createdAt => dateTime()();
-  @JsonKey('updated_at') // 3. Provide timstamp attributes b
+  @JsonKey('updated_at') // 3. Provide timestamp attributes b
   DateTimeColumn get updatedAt => dateTime()();
-  @JsonKey('deleted_at') // 3. Provide timstamp attributes c
+  @JsonKey('deleted_at') // 3. Provide timestamp attributes c
   DateTimeColumn get deletedAt => dateTime().nullable()();
   TextColumn get name => text()();
   
 
-  // 4. Specify isRemote attribute
+  // 4. Specify the isRemote attribute
   BoolColumn get isRemote => boolean().withDefault(const Constant(false))();
 
   @JsonKey('project_id')
@@ -37,7 +46,7 @@ class Task extends Table {
 ```
 
 Define `SyncManager`
-- `SyncManager` combines data from anotated classes and generates code that can be used with  `WatermelonDB` styled server DB functions.
+- `SyncManager` combines data from annotated classes and generates code that can be used with  `WatermelonDB` styled server DB functions.
 ```dart
 part 'sync_manager.sync.dart';
 // Specify tables to sync in - IN THE ORDER OF THEIR DEPENDENCIES
@@ -57,9 +66,9 @@ class SyncClass {
 }
 ```
 
-But provide the tables in the order of dependencies as this will determin the order in which they will be inserted.
+But provide the tables in the order of dependencies as this will determine the order in which they will be inserted.
 
-Then you can utilize provided functions for example like this to communicate with supabase:
+Then you can utilize the provided functions, for example like this to communicate with supabase:
 
 ```dart
 class SyncManagerS {
@@ -226,7 +235,7 @@ class SyncManagerS {
 
 ### Server
 
-On the server you need to define two things:
+On the server, you need to define two things:
 - RLS rules such as this:
 ```sql
 alter policy "doc_updates_rls"
@@ -239,7 +248,7 @@ with check (
 );
 ```
 
-In supabase these rules are then respected inside database functions as so simplify them.
+In Supabase, these rules are respected inside database functions, so simplify them.
 
 - Database functions:
   - [push_changes](server/db_functions/push_changes.sql)
@@ -247,19 +256,19 @@ In supabase these rules are then respected inside database functions as so simpl
   - [pull_changes](server/db_functions/pull_changes.sql)
 
 
-You can just copy paste them into your project if you are synchronizing data for just one user. The implementation is generic and utilizes RLS rules.
+You can copy and paste them into your project if you synchronize data for just one user. The implementation is generic and utilizes RLS rules.
 
 
 ## Run this demo
 
-On supabase create a project and do these steps:
+On Supabase create a project and do these steps:
 - Insert tables with RLS from `generate_db.sql`
-- Add database fuctions from:
+- Add database functions from:
     - `pull_changes.sql`
     - `push_changes_helpers.sql`
     - `push_changes.sql`
 
-Add to this project .env file with:
+Add to the project .env file with:
 ```
 SUPABASE_URL=https://xxxxsupabase.co
 SUPABASE_ANON_KEY=xxxxxx
