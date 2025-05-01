@@ -72,7 +72,7 @@ class SyncManagerS {
     }).subscribe();
   }
 
-  void startListeningOnInternetChanges() {
+  void _startListeningOnInternetChanges() {
     _connectionSubscription =
         InternetConnection().onStatusChange.listen((InternetStatus status) {
       switch (status) {
@@ -90,6 +90,7 @@ class SyncManagerS {
     queueSync();
     _listenOnLocalUpdates();
     _listenOnTheServerUpdates();
+    _startListeningOnInternetChanges();
   }
 
   void _listenOnLocalUpdates() {
