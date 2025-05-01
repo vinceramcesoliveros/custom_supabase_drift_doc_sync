@@ -2,18 +2,14 @@
 
 This project showcases two things:
 - How can you easily sync your data (one-user data) across devices that are stored using Drift DB?
-- Showcase of synchronization of appflowy editor content across devices with handling of merge conflicts using appflowy_editor_sync_plugin
+- Showcase of synchronization of appflowy editor content across devices with handling of merge conflicts using appflowy_editor_sync_plugin 
 
 ## Demo
 
-Example of how this works in the browser. But the same applies for native platforms. The browser only has some workerounds viz: `database.dart`, `tab_separated_shared_preferences.dart`:
-
-https://github.com/Musta-Pollo/custom_supabase_drift_doc_sync/blob/main/demo_recording.mp4
-
-**Notes:**
-The demo is slightly longer because it is a live demonstration and involves turning the Wi-Fi on and off. This same demo functions well on all other Flutter platforms and Wear OS if properly configured.
+Example of how this works in the browser. But the same applies for native platforms. The browser only has some workarounds viz: `database.dart`, `tab_separated_shared_preferences.dart`:
 
 
+https://github.com/user-attachments/assets/274e50de-ac70-42b1-9a43-083a8f0db7ac
 
 
 **Notes:**
