@@ -197,10 +197,37 @@ class SyncManagerS {
       _isSyncing = false;
 
       if (_extraSyncNeeded) {
-        E.t.debug('Extra sync needed');
+        E.t.debug('Extra sync needed, scheduling first retry in 800ms');
         _extraSyncNeeded = false;
+
+        // First retry after 800ms
         Future.delayed(const Duration(milliseconds: 800), () {
-          queueSync();
+          if (!_isSyncing) {
+            E.t.debug('Performing first retry sync');
+            queueSync();
+
+            // Second retry after 4000ms if no other updates triggered a sync
+            Future.delayed(const Duration(milliseconds: 4000), () {
+              if (!_isSyncing && !_extraSyncNeeded) {
+                E.t.debug('Performing second retry sync');
+                queueSync();
+
+                // Third retry after another 1000ms if still no updates
+                Future.delayed(const Duration(milliseconds: 6000), () {
+                  if (!_isSyncing && !_extraSyncNeeded) {
+                    E.t.debug('Performing third retry sync');
+                    queueSync();
+                  } else {
+                    E.t.debug(
+                        'Skipping third retry, sync already in progress or queued');
+                  }
+                });
+              } else {
+                E.t.debug(
+                    'Skipping second retry, sync already in progress or queued');
+              }
+            });
+          }
         });
       }
     }).catchError((error, st) {
