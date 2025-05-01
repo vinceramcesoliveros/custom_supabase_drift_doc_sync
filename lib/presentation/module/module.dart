@@ -63,11 +63,16 @@ AppRouter appRouter(AppRouterRef ref) {
 class SyncMangerP extends _$SyncMangerP {
   @override
   SyncManagerS build() {
-    return SyncManagerS(
+    final manager = SyncManagerS(
       db: ref.watch(appDatabaseProvider),
       supabase: ref.watch(supabaseProvider),
       basicSharePrefs: ref.watch(sharedPreferencesProvider),
     );
+
+    ref.onDispose(() {
+      manager.dispose();
+    });
+    return manager;
   }
 }
 

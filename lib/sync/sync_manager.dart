@@ -5,6 +5,7 @@ import 'package:custom_supabase_drift_sync/db/database.dart';
 import 'package:custom_supabase_drift_sync/db/tab_separate_shared_preferences.dart';
 import 'package:custom_sync_drift_annotations/annotations.dart';
 import 'package:easy_debounce/easy_debounce.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:retry/retry.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -38,6 +39,7 @@ class SyncManagerS {
   final String _currentInstanceId = const Uuid().v4();
   bool _extraSyncNeeded = false;
   StreamSubscription? _streamSubscription;
+  StreamSubscription<InternetStatus>? _connectionSubscription;
 
   SyncManagerS({
     required this.db,
@@ -68,6 +70,20 @@ class SyncManagerS {
         (payload) {
       queueSyncDebounce();
     }).subscribe();
+  }
+
+  void startListeningOnInternetChanges() {
+    _connectionSubscription =
+        InternetConnection().onStatusChange.listen((InternetStatus status) {
+      switch (status) {
+        case InternetStatus.connected:
+          queueSync();
+          break;
+        case InternetStatus.disconnected:
+          // The internet is now disconnected
+          break;
+      }
+    });
   }
 
   void _startListening() {
@@ -203,5 +219,12 @@ class SyncManagerS {
 
   Future<void> _setLastPulledAt(DateTime timestamp) async {
     await sharedPrefs.setString(lastPulledAtKey, timestamp.toIso8601String());
+  }
+
+  void dispose() {
+    _streamSubscription?.cancel();
+    _streamSubscription = null;
+    _connectionSubscription?.cancel();
+    _connectionSubscription = null;
   }
 }
