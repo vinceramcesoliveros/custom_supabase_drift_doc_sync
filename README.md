@@ -2,7 +2,8 @@
 
 This project showcases two things:
 - How can you easily sync your data (one-user data) across devices that are stored using Drift DB?
-- Showcase of synchronization of appflowy editor content across devices with handling of merge conflicts using appflowy_editor_sync_plugin 
+- Showcase of synchronization of appflowy editor content across devices with handling of merge conflicts and offline editing using appflowy_editor_sync_plugin.
+- All of this with full-offline support.
 
 ## Demo
 
