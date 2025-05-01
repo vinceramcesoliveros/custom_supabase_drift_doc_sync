@@ -91,8 +91,8 @@ class LoginPage extends ConsumerWidget {
 class _TestAccountInfoWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    const email = 'test_account@gmail.com';
-    const password = 'test_account@gmail.com';
+    const email = 'testaccount2@gmail.com';
+    const password = 'testaccount2@gmail.com';
 
     return Container(
       padding: const EdgeInsets.all(12),
