@@ -1,9 +1,11 @@
 # Custom Drift Synchronization Example
 
 This project showcases two things:
-- How can you easily sync your data (one-user data) across devices that are stored using Drift DB?
-- Showcase of synchronization of appflowy editor content across devices with handling of merge conflicts and offline editing using appflowy_editor_sync_plugin.
-- All of this with full-offline support.
+- Synchronization of one-user data across devices that are stored using Drift DB
+     - Client side: A lot of the boilerplate is achieved through code generation
+     - Server side: A generic code that can be easily reused as it is
+- Synchronization of appflowy editor content across devices with handling of merge conflicts and offline editing using appflowy_editor_sync_plugin.
+
 
 ## Demo
 
@@ -294,3 +296,7 @@ SUPABASE_STORAGE_BUCKET=xxxx //Not used, but still provide it
 ```
 
 Run the project :)
+
+## Possible Extension for Multi-user use case
+There is a problem that when the user can gain access or lose access to some resources, this timestamped synchronization would need extra tracking for changes that would require a complete resync.
+This is not achieved in this project, but it would also be likely possible. 
