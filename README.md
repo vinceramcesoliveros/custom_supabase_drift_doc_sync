@@ -279,6 +279,19 @@ In Supabase, these rules are respected inside database functions, so simplify th
 You can copy and paste them into your project if you synchronize data for just one user. The implementation is generic and utilizes RLS rules.
 
 
+## Timestamp Attributes
+Tables require special timestamp attributes for tracking changes:
+Client-side attributes:
+• created_at: Records when a record was created on the client
+• updated_at: Records when a record was updated on the client
+• deleted_at: Records when a record was deleted on the client
+Server-side attributes:
+• server_created_at: Records when a record was created on the server
+• server_updated_at: Records when a record was updated on the server
+• deleted_at: Records when a record was deleted on the server
+
+An optional instance_id attribute enables more efficient filtering of real-time updates.
+
 ## Run this demo
 
 On Supabase create a project and do these steps:
