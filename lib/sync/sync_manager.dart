@@ -40,6 +40,7 @@ class SyncManagerS {
   bool _extraSyncNeeded = false;
   StreamSubscription? _streamSubscription;
   StreamSubscription<InternetStatus>? _connectionSubscription;
+  Timer? _periodicSyncTimer;
 
   SyncManagerS({
     required this.db,
@@ -48,6 +49,14 @@ class SyncManagerS {
   }) : super() {
     _checkInitialLoginStatus();
     sharedPrefs = TabSeparateSharedPreferences.getInstance(basicSharePrefs);
+  }
+
+  void _startPeriodicSync() {
+    _periodicSyncTimer?.cancel();
+    _periodicSyncTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      E.t.debug('Triggering periodic sync (30s interval)');
+      queueSync();
+    });
   }
 
   Future<void> _checkInitialLoginStatus() async {
@@ -90,6 +99,7 @@ class SyncManagerS {
     _listenOnLocalUpdates();
     _listenOnTheServerUpdates();
     _startListeningOnInternetChanges();
+    _startPeriodicSync();
   }
 
   void _listenOnLocalUpdates() {
@@ -213,10 +223,21 @@ class SyncManagerS {
                 queueSync();
 
                 // Third retry after another 1000ms if still no updates
-                Future.delayed(const Duration(milliseconds: 6000), () {
+                Future.delayed(const Duration(milliseconds: 8000), () {
                   if (!_isSyncing && !_extraSyncNeeded) {
                     E.t.debug('Performing third retry sync');
                     queueSync();
+
+                    // Four retry after another 1000ms if still no updates
+                    Future.delayed(const Duration(milliseconds: 10000), () {
+                      if (!_isSyncing && !_extraSyncNeeded) {
+                        E.t.debug('Performing third retry sync');
+                        queueSync();
+                      } else {
+                        E.t.debug(
+                            'Skipping four retry, sync already in progress or queued');
+                      }
+                    });
                   } else {
                     E.t.debug(
                         'Skipping third retry, sync already in progress or queued');
