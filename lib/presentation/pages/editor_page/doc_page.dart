@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:custom_supabase_drift_sync/presentation/components/sync_button.dart';
 import 'package:custom_supabase_drift_sync/presentation/components/theme_button.dart';
 import 'package:custom_supabase_drift_sync/presentation/pages/editor_page/desktop_editor.dart';
 import 'package:custom_supabase_drift_sync/presentation/pages/editor_page/mobile_editor.dart';
@@ -18,7 +17,9 @@ class DocPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Doc Page'),
-        actions: const [ThemeButton(), SynchronizeButton()],
+        actions: const [
+          ThemeButton(),
+        ],
       ),
       body: Consumer(
         builder: (context, ref, child) {

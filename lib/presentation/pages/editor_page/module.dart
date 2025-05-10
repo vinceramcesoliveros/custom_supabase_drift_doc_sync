@@ -26,7 +26,7 @@ class DocP extends _$DocP {
             ..where((u) => u.taskId.equals(taskId));
           final updates = await updatesSel.get();
           return updates
-              .map((e) => DbUpdate(update: base64Decode(e.dataB64), id: e.id))
+              .map((e) => DbUpdate(update: base64Decode(e.dataB64)))
               .toList();
         },
         getUpdatesStream: () async* {
@@ -43,7 +43,6 @@ class DocP extends _$DocP {
                 (e) {
                   return DbUpdate(
                     update: base64Decode(e.dataB64),
-                    id: e.id,
                   );
                 },
               ).toList();
