@@ -18,7 +18,6 @@ class DocP extends _$DocP {
   @override
   Future<EditorState> build(String taskId) async {
     final adapter = EditorStateSyncWrapper(
-      updatesBatcherDebounceDuration: const Duration(milliseconds: 100),
       syncAttributes: SyncAttributes(
         getInitialUpdates: () async {
           //Get all updates from docUpdates where docId = taskId
