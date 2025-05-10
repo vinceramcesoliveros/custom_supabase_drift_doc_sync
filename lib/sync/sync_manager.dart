@@ -119,7 +119,7 @@ class SyncManagerS {
   }
 
   void queueSyncDebounce() {
-    EasyDebounce.debounce('sync', const Duration(milliseconds: 200), () {
+    EasyDebounce.debounce('sync', const Duration(milliseconds: 1000), () {
       E.t.debug('Debounce trigger sync');
       queueSync();
     });
