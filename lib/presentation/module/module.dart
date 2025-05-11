@@ -2,7 +2,9 @@ import 'package:custom_supabase_drift_sync/core/error_handling.dart';
 import 'package:custom_supabase_drift_sync/core/navigation/router.dart';
 import 'package:custom_supabase_drift_sync/db/database.dart' as db;
 import 'package:custom_supabase_drift_sync/sync/sync_builder.dart';
+import 'package:custom_supabase_drift_sync/sync/sync_interface.dart';
 import 'package:custom_supabase_drift_sync/sync/sync_manager.dart';
+import 'package:custom_sync_drift_annotations/annotations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -81,15 +83,23 @@ AppRouter appRouter(AppRouterRef ref) {
 @riverpod
 class SyncMangerP extends _$SyncMangerP {
   @override
-  SyncManagerBuilder build() {
+  SyncInterface build() {
+    // final manager = SyncManagerS(
+    //   db: ref.watch(appDatabaseProvider),
+    //   supabase: ref.watch(supabaseProvider),
+    //   basicSharePrefs: ref.watch(sharedPreferencesProvider),
+    //   syncClass: const SyncClass(),
+    // );
+    final dbRef = ref.watch(appDatabaseProvider);
     final manager = SyncManagerBuilder(
-        db: ref.watch(appDatabaseProvider),
-        supabase: ref.watch(supabaseProvider),
-        basicSharePrefs: ref.watch(sharedPreferencesProvider),
-        syncClass: SyncBuilder(
-          tables: [db.Task(), db.Project(), db.Docup()],
-        ));
-
+      db: dbRef,
+      supabase: ref.watch(supabaseProvider),
+      basicSharePrefs: ref.watch(sharedPreferencesProvider),
+      // syncClass: const SyncClass(),
+      syncClass: SyncBuilder(
+        tables: [db.Task(), db.Project(), db.Docup()],
+      ),
+    );
     ref.onDispose(() {
       manager.dispose();
     });

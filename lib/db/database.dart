@@ -1,12 +1,15 @@
 import 'package:custom_supabase_drift_sync/db/project_dao_mixin.dart';
 import 'package:custom_supabase_drift_sync/db/task_dao_mixin.dart';
 import 'package:custom_supabase_drift_sync/sync/sync_builder.dart';
+import 'package:custom_sync_drift_annotations/annotations.dart';
+import 'package:dartx/dartx.dart';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:universal_platform/universal_platform.dart';
 import 'package:uuid/uuid.dart';
 
+part 'database.classsync.dart';
 part 'database.g.dart';
 
 extension DateTimeExtension on DateTimeColumn {
@@ -15,21 +18,13 @@ extension DateTimeExtension on DateTimeColumn {
   }
 }
 
+@customSync
 class Task extends Table with TableServer {
-  @override
-  String get serverTableName => "public.task";
+  static String get serverTableName => "public.task";
 
-  TextColumn get id => text().clientDefault(() => const Uuid().v4())();
-  @JsonKey('created_at')
-  DateTimeColumn get createdAt => dateTime()();
-  @JsonKey('updated_at')
-  DateTimeColumn get updatedAt => dateTime()();
-  @JsonKey('deleted_at')
-  DateTimeColumn get deletedAt => dateTime().nullable()();
+  @override
+  String get serverTblName => serverTableName;
   TextColumn get name => text()();
-
-  @override
-  BoolColumn get isRemote => boolean().withDefault(const Constant(false))();
 
   @JsonKey('project_id')
   TextColumn get projectId => text()();
@@ -37,18 +32,42 @@ class Task extends Table with TableServer {
   TextColumn get userId => text()();
 
   @override
-  Set<Column> get primaryKey => {id};
-}
-
-class Project extends Table with TableServer {
-  @override
-  String get serverTableName => "public.project";
-
   TextColumn get id => text().clientDefault(() => const Uuid().v4())();
+  @override
+  BoolColumn get isRemote => boolean().withDefault(const Constant(false))();
+  @override
   @JsonKey('created_at')
   DateTimeColumn get createdAt => dateTime()();
+  @override
   @JsonKey('updated_at')
   DateTimeColumn get updatedAt => dateTime()();
+  @override
+  @JsonKey('deleted_at')
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+  @override
+  Set<Column> get primaryKey => {id};
+
+  @override
+  Insertable<DataClass> fromJson(Map<String, dynamic> json) {
+    return TaskData.fromJson(json);
+  }
+}
+
+@customSync
+class Project extends Table with TableServer {
+  static String get serverTableName => "public.project";
+
+  @override
+  String get serverTblName => serverTableName;
+  @override
+  TextColumn get id => text().clientDefault(() => const Uuid().v4())();
+  @override
+  @JsonKey('created_at')
+  DateTimeColumn get createdAt => dateTime()();
+  @override
+  @JsonKey('updated_at')
+  DateTimeColumn get updatedAt => dateTime()();
+  @override
   @JsonKey('deleted_at')
   DateTimeColumn get deletedAt => dateTime().nullable()();
 
@@ -58,17 +77,28 @@ class Project extends Table with TableServer {
 
   @override
   Set<Column> get primaryKey => {id};
+
+  @override
+  Insertable<DataClass> fromJson(Map<String, dynamic> json) {
+    return ProjectData.fromJson(json);
+  }
 }
 
+@customSync
 class Docup extends Table with TableServer {
-  @override
-  String get serverTableName => "public.doc_updates";
+  static String get serverTableName => "public.doc_updates";
 
+  @override
+  String get serverTblName => serverTableName;
+  @override
   TextColumn get id => text().clientDefault(() => const Uuid().v4())();
+  @override
   @JsonKey('created_at')
   DateTimeColumn get createdAt => dateTime()();
+  @override
   @JsonKey('updated_at')
   DateTimeColumn get updatedAt => dateTime()();
+  @override
   @JsonKey('deleted_at')
   DateTimeColumn get deletedAt => dateTime().nullable()();
   @JsonKey('data_b64')
@@ -81,6 +111,11 @@ class Docup extends Table with TableServer {
 
   @override
   Set<Column> get primaryKey => {id};
+
+  @override
+  Insertable<DataClass> fromJson(Map<String, dynamic> json) {
+    return DocupData.fromJson(json);
+  }
 }
 
 @DriftDatabase(tables: [
