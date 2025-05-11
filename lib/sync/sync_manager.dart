@@ -1,36 +1,32 @@
 // // ignore_for_file: public_member_api_docs, sort_constructors_first
-// import 'dart:async';
+import 'dart:async';
 
-// import 'package:custom_sync_drift_annotations/annotations.dart';
-// import 'package:easy_debounce/easy_debounce.dart';
-// import 'package:flutter/rendering.dart';
-// import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
-// import 'package:rxdart/rxdart.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:supabase/supabase.dart';
-// import 'package:uuid/uuid.dart';
+import 'package:custom_sync_drift_annotations/annotations.dart';
+import 'package:easy_debounce/easy_debounce.dart';
+import 'package:flutter/rendering.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase/supabase.dart';
+import 'package:uuid/uuid.dart';
 
-// import 'package:custom_supabase_drift_sync/core/constant_retry.dart';
-// import 'package:custom_supabase_drift_sync/core/error_handling.dart';
-// import 'package:custom_supabase_drift_sync/db/database.dart';
-// import 'package:custom_supabase_drift_sync/db/tab_separate_shared_preferences.dart';
+import 'package:custom_supabase_drift_sync/core/constant_retry.dart';
+import 'package:custom_supabase_drift_sync/core/error_handling.dart';
+import 'package:custom_supabase_drift_sync/db/database.dart';
+import 'package:custom_supabase_drift_sync/db/tab_separate_shared_preferences.dart';
 
-// part 'sync_manager.sync.dart';
-
-// @SyncManager(classes: [Task, Project, Docup])
-// class SyncClass {
-//   const SyncClass();
-
-//   Future<void> sync(Map<String, dynamic> changes, AppDatabase db) =>
-//       _$SyncClassSync(changes, db);
-//   Future<Map<String, dynamic>> getChanges(
-//           DateTime lastSyncedAt, AppDatabase db, String currentInstanceId) =>
-//       _$SyncClassGetChanges(lastSyncedAt, db, currentInstanceId);
-//   List<String> syncedTables() => _$SyncClassSyncedTables();
-
-//   Stream<List<dynamic>> getUpdateStreams(AppDatabase db) =>
-//       _$SyncClassCombinedStreams(db);
-// }
+// class SyncManagerS {
+//   final AppDatabase db;
+//   final SupabaseClient supabase;
+//   final SharedPreferences basicSharePrefs;
+//   late final TabSeparateSharedPreferences sharedPrefs;
+//   final bool _isSyncing = false;
+//   final bool _isLoggedIn = false;
+//   final String _currentInstanceId = const Uuid().v4();
+//   final bool _extraSyncNeeded = false;
+//   StreamSubscription? _streamSubscription;
+//   StreamSubscription<InternetStatus>? _connectionSubscription;
+//   Timer? _periodicSyncTimer;
 
 // class SyncManagerS {
 //   final AppDatabase db;
@@ -55,13 +51,21 @@
 //     sharedPrefs = TabSeparateSharedPreferences.getInstance(basicSharePrefs);
 //   }
 
-//   Future<void> _checkInitialLoginStatus() async {
-//     // Replace this with your actual logic to check if the user is logged in.
-//     final session = supabase.auth.currentSession;
-//     if (session != null) {
-//       signIn();
-//     }
+// void _startPeriodicSync() {
+//   _periodicSyncTimer?.cancel();
+//   _periodicSyncTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+//     E.t.debug('Triggering periodic sync (30s interval)');
+//     queueSync();
+//   });
+// }
+
+// Future<void> _checkInitialLoginStatus() async {
+//   // Replace this with your actual logic to check if the user is logged in.
+//   final session = supabase.auth.currentSession;
+//   if (session != null) {
+//     signIn();
 //   }
+// }
 
 //   Future<void> _synchronize() async {
 //     await sequenceRetry(
@@ -92,12 +96,13 @@
 //     });
 //   }
 
-//   void _startListening() {
-//     queueSync();
-//     _listenOnLocalUpdates();
-//     _listenOnTheServerUpdates();
-//     _startListeningOnInternetChanges();
-//   }
+  // void _startListening() {
+  //   queueSync();
+  //   _listenOnLocalUpdates();
+  //   _listenOnTheServerUpdates();
+  //   _startListeningOnInternetChanges();
+  //   _startPeriodicSync();
+  // }
 
 //   void _listenOnLocalUpdates() {
 //     final combinedStream = syncClass.getUpdateStreams(db);
@@ -219,29 +224,40 @@
 //                 E.t.debug('Performing second retry sync');
 //                 queueSync();
 
-//                 // Third retry after another 1000ms if still no updates
-//                 Future.delayed(const Duration(milliseconds: 6000), () {
-//                   if (!_isSyncing && !_extraSyncNeeded) {
-//                     E.t.debug('Performing third retry sync');
-//                     queueSync();
-//                   } else {
-//                     E.t.debug(
-//                         'Skipping third retry, sync already in progress or queued');
-//                   }
-//                 });
-//               } else {
-//                 E.t.debug(
-//                     'Skipping second retry, sync already in progress or queued');
-//               }
-//             });
-//           }
-//         });
-//       }
-//     }).catchError((error, st) {
-//       _isSyncing = false;
-//       E.t.error(error, st);
-//     });
-//   }
+                // Third retry after another 1000ms if still no updates
+  //               Future.delayed(Duration(milliseconds = 8000), () {
+  //                 if (!_isSyncing && !_extraSyncNeeded) {
+  //                   E.t.debug('Performing third retry sync');
+  //                   queueSync();
+
+  //                   // Four retry after another 1000ms if still no updates
+  //                   Future.delayed(const Duration(milliseconds: 10000), () {
+  //                     if (!_isSyncing && !_extraSyncNeeded) {
+  //                       E.t.debug('Performing third retry sync');
+  //                       queueSync();
+  //                     } else {
+  //                       E.t.debug(
+  //                           'Skipping four retry, sync already in progress or queued');
+  //                     }
+  //                   });
+  //                 } else {
+  //                   E.t.debug(
+  //                       'Skipping third retry, sync already in progress or queued');
+  //                 }
+  //               });
+  //             } else {
+  //               E.t.debug(
+  //                   'Skipping second retry, sync already in progress or queued');
+  //             }
+  //           });
+  //         }
+  //       });
+  //     }
+  //   }).catchError((error, st) {
+  //     _isSyncing = false;
+  //     E.t.error(error, st);
+  //   });
+  // }
 
 //   String lastPulledAtKey = 'lastPulledAt';
 
