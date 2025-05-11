@@ -25,6 +25,15 @@ class SyncManagerBuilder {
   StreamSubscription? _streamSubscription;
   StreamSubscription<InternetStatus>? _connectionSubscription;
   final SyncBuilder syncClass;
+  Timer? _periodicSyncTimer;
+
+  void _startPeriodicSync() {
+    _periodicSyncTimer?.cancel();
+    _periodicSyncTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      E.t.debug('Triggering periodic sync (30s interval)');
+      queueSync();
+    });
+  }
 
   /// Example:
   /// ```dart
@@ -88,10 +97,15 @@ class SyncManagerBuilder {
   }
 
   void _startListening() {
-    queueSync();
-    _listenOnLocalUpdates();
-    _listenOnTheServerUpdates();
-    _startListeningOnInternetChanges();
+    try {
+      queueSync();
+      _listenOnLocalUpdates();
+      _listenOnTheServerUpdates();
+      _startListeningOnInternetChanges();
+      _startPeriodicSync();
+    } catch (e) {
+      debugPrint('$e');
+    }
   }
 
   void _listenOnLocalUpdates() {
@@ -261,6 +275,8 @@ class SyncManagerBuilder {
     _streamSubscription = null;
     _connectionSubscription?.cancel();
     _connectionSubscription = null;
+    _periodicSyncTimer?.cancel();
+    _periodicSyncTimer = null;
   }
 }
 
@@ -277,7 +293,9 @@ class SyncBuilder<T extends TableServer> {
   });
 
   Future<void> sync(Map<String, dynamic> changes, AppDatabase db) async {
-    await Future.wait(tables.map((table) => table.sync(changes, db)));
+    final result =
+        await Future.wait(tables.map((table) => table.sync(changes, db)));
+    debugPrint('$result');
   }
 
   Future<Map<String, dynamic>> getChanges(
@@ -398,13 +416,19 @@ extension RealtimeChannelExtension on RealtimeChannel {
     required String currentInstanceId,
     required void Function(PostgresChangePayload) callback,
   }) {
-    for (final name in serverTableNames) {
-      onTableChanges(
-        callback: callback,
-        currentInstanceId: currentInstanceId,
-        serverTableName: name,
-      );
+    try {
+      for (final name in serverTableNames) {
+        final result = onTableChanges(
+          callback: callback,
+          currentInstanceId: currentInstanceId,
+          serverTableName: name,
+        );
+        E.t.debug('TABLE $name changed $result');
+      }
+      return this;
+    } catch (e) {
+      debugPrint("$e");
+      return this;
     }
-    return this;
   }
 }

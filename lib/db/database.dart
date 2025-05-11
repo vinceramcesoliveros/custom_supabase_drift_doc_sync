@@ -1,7 +1,6 @@
 import 'package:custom_supabase_drift_sync/db/project_dao_mixin.dart';
 import 'package:custom_supabase_drift_sync/db/task_dao_mixin.dart';
 import 'package:custom_supabase_drift_sync/sync/sync_builder.dart';
-import 'package:custom_sync_drift_annotations/annotations.dart';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
@@ -61,7 +60,6 @@ class Project extends Table with TableServer {
   Set<Column> get primaryKey => {id};
 }
 
-@customSync
 class Docup extends Table with TableServer {
   @override
   String get serverTableName => "public.doc_updates";
