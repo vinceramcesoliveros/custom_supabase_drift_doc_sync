@@ -1,5 +1,6 @@
 import 'package:custom_supabase_drift_sync/db/project_dao_mixin.dart';
 import 'package:custom_supabase_drift_sync/db/task_dao_mixin.dart';
+import 'package:custom_supabase_drift_sync/sync/sync_builder.dart';
 import 'package:custom_sync_drift_annotations/annotations.dart';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
@@ -7,7 +8,6 @@ import 'package:flutter/foundation.dart';
 import 'package:universal_platform/universal_platform.dart';
 import 'package:uuid/uuid.dart';
 
-part 'database.classsync.dart';
 part 'database.g.dart';
 
 extension DateTimeExtension on DateTimeColumn {
@@ -16,9 +16,9 @@ extension DateTimeExtension on DateTimeColumn {
   }
 }
 
-@customSync
-class Task extends Table {
-  static String get serverTableName => "public.task";
+class Task extends Table with TableServer {
+  @override
+  String get serverTableName => "public.task";
 
   TextColumn get id => text().clientDefault(() => const Uuid().v4())();
   @JsonKey('created_at')
@@ -29,6 +29,7 @@ class Task extends Table {
   DateTimeColumn get deletedAt => dateTime().nullable()();
   TextColumn get name => text()();
 
+  @override
   BoolColumn get isRemote => boolean().withDefault(const Constant(false))();
 
   @JsonKey('project_id')
@@ -40,9 +41,9 @@ class Task extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@customSync
-class Project extends Table {
-  static String get serverTableName => "public.project";
+class Project extends Table with TableServer {
+  @override
+  String get serverTableName => "public.project";
 
   TextColumn get id => text().clientDefault(() => const Uuid().v4())();
   @JsonKey('created_at')
@@ -51,8 +52,6 @@ class Project extends Table {
   DateTimeColumn get updatedAt => dateTime()();
   @JsonKey('deleted_at')
   DateTimeColumn get deletedAt => dateTime().nullable()();
-
-  BoolColumn get isRemote => boolean().withDefault(const Constant(false))();
 
   TextColumn get name => text()();
   @JsonKey('user_id')
@@ -63,8 +62,9 @@ class Project extends Table {
 }
 
 @customSync
-class Docup extends Table {
-  static String get serverTableName => "public.doc_updates";
+class Docup extends Table with TableServer {
+  @override
+  String get serverTableName => "public.doc_updates";
 
   TextColumn get id => text().clientDefault(() => const Uuid().v4())();
   @JsonKey('created_at')
@@ -75,8 +75,6 @@ class Docup extends Table {
   DateTimeColumn get deletedAt => dateTime().nullable()();
   @JsonKey('data_b64')
   TextColumn get dataB64 => text()();
-
-  BoolColumn get isRemote => boolean().withDefault(const Constant(false))();
 
   @JsonKey('task_id')
   TextColumn get taskId => text()();

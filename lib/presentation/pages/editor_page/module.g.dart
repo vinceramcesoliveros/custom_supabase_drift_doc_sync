@@ -6,7 +6,7 @@ part of 'module.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$docPHash() => r'643d4c76af4197e7b0db7b35e89ed3523a5e2704';
+String _$docPHash() => r'3ea6308c9262aad29f0b0b8665df33af34acf230';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -152,6 +152,8 @@ class DocPProvider
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin DocPRef on AutoDisposeAsyncNotifierProviderRef<EditorState> {
   /// The parameter `taskId` of this provider.
   String get taskId;
@@ -166,4 +168,4 @@ class _DocPProviderElement
   String get taskId => (origin as DocPProvider).taskId;
 }
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

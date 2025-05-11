@@ -4,6 +4,7 @@ import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:appflowy_editor_sync_plugin/editor_state_sync_wrapper.dart';
 import 'package:appflowy_editor_sync_plugin/types/sync_db_attributes.dart';
 import 'package:appflowy_editor_sync_plugin/types/update_types.dart';
+import 'package:appflowy_editor_sync_plugin/utils/debug_print_custom.dart';
 import 'package:custom_supabase_drift_sync/db/database.dart';
 import 'package:custom_supabase_drift_sync/presentation/module/module.dart';
 import 'package:drift/drift.dart';
@@ -67,6 +68,10 @@ class DocP extends _$DocP {
     final editorState = await adapter.initAndHandleChanges();
 
     ref.onDispose(adapter.dispose);
+    final selectionService = editorState.selectionNotifier.addListener(() {
+      debugPrintCustom(
+          "Selection changed: ${editorState.selectionNotifier.value}");
+    });
 
     return editorState;
   }

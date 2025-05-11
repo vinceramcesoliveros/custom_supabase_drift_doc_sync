@@ -142,6 +142,8 @@ class ProjectNameProvider extends AutoDisposeFutureProvider<String> {
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin ProjectNameRef on AutoDisposeFutureProviderRef<String> {
   /// The parameter `projectId` of this provider.
   String get projectId;
@@ -299,6 +301,8 @@ class ProjectPProvider
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin ProjectPRef on AutoDisposeStreamNotifierProviderRef<ProjectData> {
   /// The parameter `projectId` of this provider.
   String get projectId;
@@ -313,7 +317,7 @@ class _ProjectPProviderElement
   String get projectId => (origin as ProjectPProvider).projectId;
 }
 
-String _$projectTaskIdsPHash() => r'baabcd2ec5d4c2daac56b980f5b1456b0d3fff57';
+String _$projectTaskIdsPHash() => r'ba6ad5a2873a8425abd2e39d904a883dc462a12a';
 
 abstract class _$ProjectTaskIdsP
     extends BuildlessAutoDisposeStreamNotifier<IList<String>> {
@@ -443,6 +447,8 @@ class ProjectTaskIdsPProvider extends AutoDisposeStreamNotifierProviderImpl<
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin ProjectTaskIdsPRef
     on AutoDisposeStreamNotifierProviderRef<IList<String>> {
   /// The parameter `projectId` of this provider.
@@ -458,4 +464,4 @@ class _ProjectTaskIdsPProviderElement
   String get projectId => (origin as ProjectTaskIdsPProvider).projectId;
 }
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

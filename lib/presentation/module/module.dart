@@ -1,6 +1,7 @@
 import 'package:custom_supabase_drift_sync/core/error_handling.dart';
 import 'package:custom_supabase_drift_sync/core/navigation/router.dart';
-import 'package:custom_supabase_drift_sync/db/database.dart';
+import 'package:custom_supabase_drift_sync/db/database.dart' as db;
+import 'package:custom_supabase_drift_sync/sync/sync_builder.dart';
 import 'package:custom_supabase_drift_sync/sync/sync_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
@@ -11,7 +12,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 part 'module.g.dart';
 
 @Riverpod(keepAlive: true)
-AppDatabase appDatabase(AppDatabaseRef ref) {
+db.AppDatabase appDatabase(AppDatabaseRef ref) {
   throw UnimplementedError();
 }
 
@@ -80,12 +81,14 @@ AppRouter appRouter(AppRouterRef ref) {
 @riverpod
 class SyncMangerP extends _$SyncMangerP {
   @override
-  SyncManagerS build() {
-    final manager = SyncManagerS(
-      db: ref.watch(appDatabaseProvider),
-      supabase: ref.watch(supabaseProvider),
-      basicSharePrefs: ref.watch(sharedPreferencesProvider),
-    );
+  SyncManagerBuilder build() {
+    final manager = SyncManagerBuilder(
+        db: ref.watch(appDatabaseProvider),
+        supabase: ref.watch(supabaseProvider),
+        basicSharePrefs: ref.watch(sharedPreferencesProvider),
+        syncClass: SyncBuilder(
+          tables: [db.Task(), db.Project(), db.Docup()],
+        ));
 
     ref.onDispose(() {
       manager.dispose();

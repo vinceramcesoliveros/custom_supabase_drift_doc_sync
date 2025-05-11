@@ -73,6 +73,7 @@ class _MobileEditorState extends State<MobileEditor> {
               child: AppFlowyEditor(
                 editorStyle: _buildMobileEditorStyle(context),
                 editorState: editorState,
+
                 editorScrollController: editorScrollController,
                 blockComponentBuilders: _buildBlockComponentBuilders(context),
                 showMagnifier: true,

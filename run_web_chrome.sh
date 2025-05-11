@@ -18,7 +18,8 @@ if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
 fi
 
 echo "🚀 Running Flutter web app in development mode..."
-flutter run -d chrome \
+flutter run -d web-server \
+  --web-port=3000 \
   --dart-define=DEMO_SUPABASE_URL="$SUPABASE_URL" \
   --dart-define=DEMO_SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
   --dart-define=DEMO_SUPABASE_STORAGE_BUCKET="$SUPABASE_STORAGE_BUCKET" \

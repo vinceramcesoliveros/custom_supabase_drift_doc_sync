@@ -8,6 +8,16 @@ class $ProjectTable extends Project with TableInfo<$ProjectTable, ProjectData> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $ProjectTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _isRemoteMeta =
+      const VerificationMeta('isRemote');
+  @override
+  late final GeneratedColumn<bool> isRemote = GeneratedColumn<bool>(
+      'is_remote', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_remote" IN (0, 1))'),
+      defaultValue: const Constant(false));
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -33,16 +43,6 @@ class $ProjectTable extends Project with TableInfo<$ProjectTable, ProjectData> {
   late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
       'deleted_at', aliasedName, true,
       type: DriftSqlType.dateTime, requiredDuringInsert: false);
-  static const VerificationMeta _isRemoteMeta =
-      const VerificationMeta('isRemote');
-  @override
-  late final GeneratedColumn<bool> isRemote = GeneratedColumn<bool>(
-      'is_remote', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("is_remote" IN (0, 1))'),
-      defaultValue: const Constant(false));
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
@@ -55,7 +55,7 @@ class $ProjectTable extends Project with TableInfo<$ProjectTable, ProjectData> {
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, createdAt, updatedAt, deletedAt, isRemote, name, userId];
+      [isRemote, id, createdAt, updatedAt, deletedAt, name, userId];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -66,6 +66,10 @@ class $ProjectTable extends Project with TableInfo<$ProjectTable, ProjectData> {
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('is_remote')) {
+      context.handle(_isRemoteMeta,
+          isRemote.isAcceptableOrUnknown(data['is_remote']!, _isRemoteMeta));
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
@@ -84,10 +88,6 @@ class $ProjectTable extends Project with TableInfo<$ProjectTable, ProjectData> {
     if (data.containsKey('deleted_at')) {
       context.handle(_deletedAtMeta,
           deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
-    }
-    if (data.containsKey('is_remote')) {
-      context.handle(_isRemoteMeta,
-          isRemote.isAcceptableOrUnknown(data['is_remote']!, _isRemoteMeta));
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -110,6 +110,8 @@ class $ProjectTable extends Project with TableInfo<$ProjectTable, ProjectData> {
   ProjectData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ProjectData(
+      isRemote: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_remote'])!,
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
       createdAt: attachedDatabase.typeMapping
@@ -118,8 +120,6 @@ class $ProjectTable extends Project with TableInfo<$ProjectTable, ProjectData> {
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
       deletedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
-      isRemote: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_remote'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
       userId: attachedDatabase.typeMapping
@@ -134,31 +134,31 @@ class $ProjectTable extends Project with TableInfo<$ProjectTable, ProjectData> {
 }
 
 class ProjectData extends DataClass implements Insertable<ProjectData> {
+  final bool isRemote;
   final String id;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
-  final bool isRemote;
   final String name;
   final String userId;
   const ProjectData(
-      {required this.id,
+      {required this.isRemote,
+      required this.id,
       required this.createdAt,
       required this.updatedAt,
       this.deletedAt,
-      required this.isRemote,
       required this.name,
       required this.userId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['is_remote'] = Variable<bool>(isRemote);
     map['id'] = Variable<String>(id);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
     }
-    map['is_remote'] = Variable<bool>(isRemote);
     map['name'] = Variable<String>(name);
     map['user_id'] = Variable<String>(userId);
     return map;
@@ -166,13 +166,13 @@ class ProjectData extends DataClass implements Insertable<ProjectData> {
 
   ProjectCompanion toCompanion(bool nullToAbsent) {
     return ProjectCompanion(
+      isRemote: Value(isRemote),
       id: Value(id),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
-      isRemote: Value(isRemote),
       name: Value(name),
       userId: Value(userId),
     );
@@ -182,11 +182,11 @@ class ProjectData extends DataClass implements Insertable<ProjectData> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ProjectData(
+      isRemote: serializer.fromJson<bool>(json['isRemote']),
       id: serializer.fromJson<String>(json['id']),
       createdAt: serializer.fromJson<DateTime>(json['created_at']),
       updatedAt: serializer.fromJson<DateTime>(json['updated_at']),
       deletedAt: serializer.fromJson<DateTime?>(json['deleted_at']),
-      isRemote: serializer.fromJson<bool>(json['isRemote']),
       name: serializer.fromJson<String>(json['name']),
       userId: serializer.fromJson<String>(json['user_id']),
     );
@@ -195,40 +195,40 @@ class ProjectData extends DataClass implements Insertable<ProjectData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'isRemote': serializer.toJson<bool>(isRemote),
       'id': serializer.toJson<String>(id),
       'created_at': serializer.toJson<DateTime>(createdAt),
       'updated_at': serializer.toJson<DateTime>(updatedAt),
       'deleted_at': serializer.toJson<DateTime?>(deletedAt),
-      'isRemote': serializer.toJson<bool>(isRemote),
       'name': serializer.toJson<String>(name),
       'user_id': serializer.toJson<String>(userId),
     };
   }
 
   ProjectData copyWith(
-          {String? id,
+          {bool? isRemote,
+          String? id,
           DateTime? createdAt,
           DateTime? updatedAt,
           Value<DateTime?> deletedAt = const Value.absent(),
-          bool? isRemote,
           String? name,
           String? userId}) =>
       ProjectData(
+        isRemote: isRemote ?? this.isRemote,
         id: id ?? this.id,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
-        isRemote: isRemote ?? this.isRemote,
         name: name ?? this.name,
         userId: userId ?? this.userId,
       );
   ProjectData copyWithCompanion(ProjectCompanion data) {
     return ProjectData(
+      isRemote: data.isRemote.present ? data.isRemote.value : this.isRemote,
       id: data.id.present ? data.id.value : this.id,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
-      isRemote: data.isRemote.present ? data.isRemote.value : this.isRemote,
       name: data.name.present ? data.name.value : this.name,
       userId: data.userId.present ? data.userId.value : this.userId,
     );
@@ -237,11 +237,11 @@ class ProjectData extends DataClass implements Insertable<ProjectData> {
   @override
   String toString() {
     return (StringBuffer('ProjectData(')
+          ..write('isRemote: $isRemote, ')
           ..write('id: $id, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
-          ..write('isRemote: $isRemote, ')
           ..write('name: $name, ')
           ..write('userId: $userId')
           ..write(')'))
@@ -250,45 +250,45 @@ class ProjectData extends DataClass implements Insertable<ProjectData> {
 
   @override
   int get hashCode =>
-      Object.hash(id, createdAt, updatedAt, deletedAt, isRemote, name, userId);
+      Object.hash(isRemote, id, createdAt, updatedAt, deletedAt, name, userId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ProjectData &&
+          other.isRemote == this.isRemote &&
           other.id == this.id &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt &&
-          other.isRemote == this.isRemote &&
           other.name == this.name &&
           other.userId == this.userId);
 }
 
 class ProjectCompanion extends UpdateCompanion<ProjectData> {
+  final Value<bool> isRemote;
   final Value<String> id;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
-  final Value<bool> isRemote;
   final Value<String> name;
   final Value<String> userId;
   final Value<int> rowid;
   const ProjectCompanion({
+    this.isRemote = const Value.absent(),
     this.id = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
-    this.isRemote = const Value.absent(),
     this.name = const Value.absent(),
     this.userId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ProjectCompanion.insert({
+    this.isRemote = const Value.absent(),
     this.id = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
-    this.isRemote = const Value.absent(),
     required String name,
     required String userId,
     this.rowid = const Value.absent(),
@@ -297,21 +297,21 @@ class ProjectCompanion extends UpdateCompanion<ProjectData> {
         name = Value(name),
         userId = Value(userId);
   static Insertable<ProjectData> custom({
+    Expression<bool>? isRemote,
     Expression<String>? id,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
-    Expression<bool>? isRemote,
     Expression<String>? name,
     Expression<String>? userId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (isRemote != null) 'is_remote': isRemote,
       if (id != null) 'id': id,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
-      if (isRemote != null) 'is_remote': isRemote,
       if (name != null) 'name': name,
       if (userId != null) 'user_id': userId,
       if (rowid != null) 'rowid': rowid,
@@ -319,20 +319,20 @@ class ProjectCompanion extends UpdateCompanion<ProjectData> {
   }
 
   ProjectCompanion copyWith(
-      {Value<String>? id,
+      {Value<bool>? isRemote,
+      Value<String>? id,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
       Value<DateTime?>? deletedAt,
-      Value<bool>? isRemote,
       Value<String>? name,
       Value<String>? userId,
       Value<int>? rowid}) {
     return ProjectCompanion(
+      isRemote: isRemote ?? this.isRemote,
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
-      isRemote: isRemote ?? this.isRemote,
       name: name ?? this.name,
       userId: userId ?? this.userId,
       rowid: rowid ?? this.rowid,
@@ -342,6 +342,9 @@ class ProjectCompanion extends UpdateCompanion<ProjectData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (isRemote.present) {
+      map['is_remote'] = Variable<bool>(isRemote.value);
+    }
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
@@ -353,9 +356,6 @@ class ProjectCompanion extends UpdateCompanion<ProjectData> {
     }
     if (deletedAt.present) {
       map['deleted_at'] = Variable<DateTime>(deletedAt.value);
-    }
-    if (isRemote.present) {
-      map['is_remote'] = Variable<bool>(isRemote.value);
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
@@ -372,11 +372,11 @@ class ProjectCompanion extends UpdateCompanion<ProjectData> {
   @override
   String toString() {
     return (StringBuffer('ProjectCompanion(')
+          ..write('isRemote: $isRemote, ')
           ..write('id: $id, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
-          ..write('isRemote: $isRemote, ')
           ..write('name: $name, ')
           ..write('userId: $userId, ')
           ..write('rowid: $rowid')
@@ -390,6 +390,16 @@ class $TaskTable extends Task with TableInfo<$TaskTable, TaskData> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $TaskTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _isRemoteMeta =
+      const VerificationMeta('isRemote');
+  @override
+  late final GeneratedColumn<bool> isRemote = GeneratedColumn<bool>(
+      'is_remote', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_remote" IN (0, 1))'),
+      defaultValue: const Constant(false));
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -420,16 +430,6 @@ class $TaskTable extends Task with TableInfo<$TaskTable, TaskData> {
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
       'name', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _isRemoteMeta =
-      const VerificationMeta('isRemote');
-  @override
-  late final GeneratedColumn<bool> isRemote = GeneratedColumn<bool>(
-      'is_remote', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("is_remote" IN (0, 1))'),
-      defaultValue: const Constant(false));
   static const VerificationMeta _projectIdMeta =
       const VerificationMeta('projectId');
   @override
@@ -443,7 +443,7 @@ class $TaskTable extends Task with TableInfo<$TaskTable, TaskData> {
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, createdAt, updatedAt, deletedAt, name, isRemote, projectId, userId];
+      [isRemote, id, createdAt, updatedAt, deletedAt, name, projectId, userId];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -454,6 +454,10 @@ class $TaskTable extends Task with TableInfo<$TaskTable, TaskData> {
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('is_remote')) {
+      context.handle(_isRemoteMeta,
+          isRemote.isAcceptableOrUnknown(data['is_remote']!, _isRemoteMeta));
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
@@ -479,10 +483,6 @@ class $TaskTable extends Task with TableInfo<$TaskTable, TaskData> {
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
-    if (data.containsKey('is_remote')) {
-      context.handle(_isRemoteMeta,
-          isRemote.isAcceptableOrUnknown(data['is_remote']!, _isRemoteMeta));
-    }
     if (data.containsKey('project_id')) {
       context.handle(_projectIdMeta,
           projectId.isAcceptableOrUnknown(data['project_id']!, _projectIdMeta));
@@ -504,6 +504,8 @@ class $TaskTable extends Task with TableInfo<$TaskTable, TaskData> {
   TaskData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TaskData(
+      isRemote: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_remote'])!,
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
       createdAt: attachedDatabase.typeMapping
@@ -514,8 +516,6 @@ class $TaskTable extends Task with TableInfo<$TaskTable, TaskData> {
           .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      isRemote: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_remote'])!,
       projectId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}project_id'])!,
       userId: attachedDatabase.typeMapping
@@ -530,26 +530,27 @@ class $TaskTable extends Task with TableInfo<$TaskTable, TaskData> {
 }
 
 class TaskData extends DataClass implements Insertable<TaskData> {
+  final bool isRemote;
   final String id;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
   final String name;
-  final bool isRemote;
   final String projectId;
   final String userId;
   const TaskData(
-      {required this.id,
+      {required this.isRemote,
+      required this.id,
       required this.createdAt,
       required this.updatedAt,
       this.deletedAt,
       required this.name,
-      required this.isRemote,
       required this.projectId,
       required this.userId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['is_remote'] = Variable<bool>(isRemote);
     map['id'] = Variable<String>(id);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -557,7 +558,6 @@ class TaskData extends DataClass implements Insertable<TaskData> {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
     }
     map['name'] = Variable<String>(name);
-    map['is_remote'] = Variable<bool>(isRemote);
     map['project_id'] = Variable<String>(projectId);
     map['user_id'] = Variable<String>(userId);
     return map;
@@ -565,6 +565,7 @@ class TaskData extends DataClass implements Insertable<TaskData> {
 
   TaskCompanion toCompanion(bool nullToAbsent) {
     return TaskCompanion(
+      isRemote: Value(isRemote),
       id: Value(id),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -572,7 +573,6 @@ class TaskData extends DataClass implements Insertable<TaskData> {
           ? const Value.absent()
           : Value(deletedAt),
       name: Value(name),
-      isRemote: Value(isRemote),
       projectId: Value(projectId),
       userId: Value(userId),
     );
@@ -582,12 +582,12 @@ class TaskData extends DataClass implements Insertable<TaskData> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TaskData(
+      isRemote: serializer.fromJson<bool>(json['isRemote']),
       id: serializer.fromJson<String>(json['id']),
       createdAt: serializer.fromJson<DateTime>(json['created_at']),
       updatedAt: serializer.fromJson<DateTime>(json['updated_at']),
       deletedAt: serializer.fromJson<DateTime?>(json['deleted_at']),
       name: serializer.fromJson<String>(json['name']),
-      isRemote: serializer.fromJson<bool>(json['isRemote']),
       projectId: serializer.fromJson<String>(json['project_id']),
       userId: serializer.fromJson<String>(json['user_id']),
     );
@@ -596,44 +596,44 @@ class TaskData extends DataClass implements Insertable<TaskData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'isRemote': serializer.toJson<bool>(isRemote),
       'id': serializer.toJson<String>(id),
       'created_at': serializer.toJson<DateTime>(createdAt),
       'updated_at': serializer.toJson<DateTime>(updatedAt),
       'deleted_at': serializer.toJson<DateTime?>(deletedAt),
       'name': serializer.toJson<String>(name),
-      'isRemote': serializer.toJson<bool>(isRemote),
       'project_id': serializer.toJson<String>(projectId),
       'user_id': serializer.toJson<String>(userId),
     };
   }
 
   TaskData copyWith(
-          {String? id,
+          {bool? isRemote,
+          String? id,
           DateTime? createdAt,
           DateTime? updatedAt,
           Value<DateTime?> deletedAt = const Value.absent(),
           String? name,
-          bool? isRemote,
           String? projectId,
           String? userId}) =>
       TaskData(
+        isRemote: isRemote ?? this.isRemote,
         id: id ?? this.id,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
         name: name ?? this.name,
-        isRemote: isRemote ?? this.isRemote,
         projectId: projectId ?? this.projectId,
         userId: userId ?? this.userId,
       );
   TaskData copyWithCompanion(TaskCompanion data) {
     return TaskData(
+      isRemote: data.isRemote.present ? data.isRemote.value : this.isRemote,
       id: data.id.present ? data.id.value : this.id,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
       name: data.name.present ? data.name.value : this.name,
-      isRemote: data.isRemote.present ? data.isRemote.value : this.isRemote,
       projectId: data.projectId.present ? data.projectId.value : this.projectId,
       userId: data.userId.present ? data.userId.value : this.userId,
     );
@@ -642,12 +642,12 @@ class TaskData extends DataClass implements Insertable<TaskData> {
   @override
   String toString() {
     return (StringBuffer('TaskData(')
+          ..write('isRemote: $isRemote, ')
           ..write('id: $id, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('name: $name, ')
-          ..write('isRemote: $isRemote, ')
           ..write('projectId: $projectId, ')
           ..write('userId: $userId')
           ..write(')'))
@@ -656,49 +656,49 @@ class TaskData extends DataClass implements Insertable<TaskData> {
 
   @override
   int get hashCode => Object.hash(
-      id, createdAt, updatedAt, deletedAt, name, isRemote, projectId, userId);
+      isRemote, id, createdAt, updatedAt, deletedAt, name, projectId, userId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TaskData &&
+          other.isRemote == this.isRemote &&
           other.id == this.id &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt &&
           other.name == this.name &&
-          other.isRemote == this.isRemote &&
           other.projectId == this.projectId &&
           other.userId == this.userId);
 }
 
 class TaskCompanion extends UpdateCompanion<TaskData> {
+  final Value<bool> isRemote;
   final Value<String> id;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
   final Value<String> name;
-  final Value<bool> isRemote;
   final Value<String> projectId;
   final Value<String> userId;
   final Value<int> rowid;
   const TaskCompanion({
+    this.isRemote = const Value.absent(),
     this.id = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.name = const Value.absent(),
-    this.isRemote = const Value.absent(),
     this.projectId = const Value.absent(),
     this.userId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TaskCompanion.insert({
+    this.isRemote = const Value.absent(),
     this.id = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
     required String name,
-    this.isRemote = const Value.absent(),
     required String projectId,
     required String userId,
     this.rowid = const Value.absent(),
@@ -708,23 +708,23 @@ class TaskCompanion extends UpdateCompanion<TaskData> {
         projectId = Value(projectId),
         userId = Value(userId);
   static Insertable<TaskData> custom({
+    Expression<bool>? isRemote,
     Expression<String>? id,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
     Expression<String>? name,
-    Expression<bool>? isRemote,
     Expression<String>? projectId,
     Expression<String>? userId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (isRemote != null) 'is_remote': isRemote,
       if (id != null) 'id': id,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (name != null) 'name': name,
-      if (isRemote != null) 'is_remote': isRemote,
       if (projectId != null) 'project_id': projectId,
       if (userId != null) 'user_id': userId,
       if (rowid != null) 'rowid': rowid,
@@ -732,22 +732,22 @@ class TaskCompanion extends UpdateCompanion<TaskData> {
   }
 
   TaskCompanion copyWith(
-      {Value<String>? id,
+      {Value<bool>? isRemote,
+      Value<String>? id,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
       Value<DateTime?>? deletedAt,
       Value<String>? name,
-      Value<bool>? isRemote,
       Value<String>? projectId,
       Value<String>? userId,
       Value<int>? rowid}) {
     return TaskCompanion(
+      isRemote: isRemote ?? this.isRemote,
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
       name: name ?? this.name,
-      isRemote: isRemote ?? this.isRemote,
       projectId: projectId ?? this.projectId,
       userId: userId ?? this.userId,
       rowid: rowid ?? this.rowid,
@@ -757,6 +757,9 @@ class TaskCompanion extends UpdateCompanion<TaskData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (isRemote.present) {
+      map['is_remote'] = Variable<bool>(isRemote.value);
+    }
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
@@ -771,9 +774,6 @@ class TaskCompanion extends UpdateCompanion<TaskData> {
     }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
-    }
-    if (isRemote.present) {
-      map['is_remote'] = Variable<bool>(isRemote.value);
     }
     if (projectId.present) {
       map['project_id'] = Variable<String>(projectId.value);
@@ -790,12 +790,12 @@ class TaskCompanion extends UpdateCompanion<TaskData> {
   @override
   String toString() {
     return (StringBuffer('TaskCompanion(')
+          ..write('isRemote: $isRemote, ')
           ..write('id: $id, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('name: $name, ')
-          ..write('isRemote: $isRemote, ')
           ..write('projectId: $projectId, ')
           ..write('userId: $userId, ')
           ..write('rowid: $rowid')
@@ -809,6 +809,16 @@ class $DocupTable extends Docup with TableInfo<$DocupTable, DocupData> {
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $DocupTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _isRemoteMeta =
+      const VerificationMeta('isRemote');
+  @override
+  late final GeneratedColumn<bool> isRemote = GeneratedColumn<bool>(
+      'is_remote', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_remote" IN (0, 1))'),
+      defaultValue: const Constant(false));
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -840,16 +850,6 @@ class $DocupTable extends Docup with TableInfo<$DocupTable, DocupData> {
   late final GeneratedColumn<String> dataB64 = GeneratedColumn<String>(
       'data_b64', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
-  static const VerificationMeta _isRemoteMeta =
-      const VerificationMeta('isRemote');
-  @override
-  late final GeneratedColumn<bool> isRemote = GeneratedColumn<bool>(
-      'is_remote', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("is_remote" IN (0, 1))'),
-      defaultValue: const Constant(false));
   static const VerificationMeta _taskIdMeta = const VerificationMeta('taskId');
   @override
   late final GeneratedColumn<String> taskId = GeneratedColumn<String>(
@@ -862,7 +862,7 @@ class $DocupTable extends Docup with TableInfo<$DocupTable, DocupData> {
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, createdAt, updatedAt, deletedAt, dataB64, isRemote, taskId, userId];
+      [isRemote, id, createdAt, updatedAt, deletedAt, dataB64, taskId, userId];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -873,6 +873,10 @@ class $DocupTable extends Docup with TableInfo<$DocupTable, DocupData> {
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('is_remote')) {
+      context.handle(_isRemoteMeta,
+          isRemote.isAcceptableOrUnknown(data['is_remote']!, _isRemoteMeta));
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
@@ -898,10 +902,6 @@ class $DocupTable extends Docup with TableInfo<$DocupTable, DocupData> {
     } else if (isInserting) {
       context.missing(_dataB64Meta);
     }
-    if (data.containsKey('is_remote')) {
-      context.handle(_isRemoteMeta,
-          isRemote.isAcceptableOrUnknown(data['is_remote']!, _isRemoteMeta));
-    }
     if (data.containsKey('task_id')) {
       context.handle(_taskIdMeta,
           taskId.isAcceptableOrUnknown(data['task_id']!, _taskIdMeta));
@@ -923,6 +923,8 @@ class $DocupTable extends Docup with TableInfo<$DocupTable, DocupData> {
   DocupData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DocupData(
+      isRemote: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_remote'])!,
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
       createdAt: attachedDatabase.typeMapping
@@ -933,8 +935,6 @@ class $DocupTable extends Docup with TableInfo<$DocupTable, DocupData> {
           .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
       dataB64: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}data_b64'])!,
-      isRemote: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_remote'])!,
       taskId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}task_id'])!,
       userId: attachedDatabase.typeMapping
@@ -949,26 +949,27 @@ class $DocupTable extends Docup with TableInfo<$DocupTable, DocupData> {
 }
 
 class DocupData extends DataClass implements Insertable<DocupData> {
+  final bool isRemote;
   final String id;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
   final String dataB64;
-  final bool isRemote;
   final String taskId;
   final String userId;
   const DocupData(
-      {required this.id,
+      {required this.isRemote,
+      required this.id,
       required this.createdAt,
       required this.updatedAt,
       this.deletedAt,
       required this.dataB64,
-      required this.isRemote,
       required this.taskId,
       required this.userId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    map['is_remote'] = Variable<bool>(isRemote);
     map['id'] = Variable<String>(id);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -976,7 +977,6 @@ class DocupData extends DataClass implements Insertable<DocupData> {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
     }
     map['data_b64'] = Variable<String>(dataB64);
-    map['is_remote'] = Variable<bool>(isRemote);
     map['task_id'] = Variable<String>(taskId);
     map['user_id'] = Variable<String>(userId);
     return map;
@@ -984,6 +984,7 @@ class DocupData extends DataClass implements Insertable<DocupData> {
 
   DocupCompanion toCompanion(bool nullToAbsent) {
     return DocupCompanion(
+      isRemote: Value(isRemote),
       id: Value(id),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -991,7 +992,6 @@ class DocupData extends DataClass implements Insertable<DocupData> {
           ? const Value.absent()
           : Value(deletedAt),
       dataB64: Value(dataB64),
-      isRemote: Value(isRemote),
       taskId: Value(taskId),
       userId: Value(userId),
     );
@@ -1001,12 +1001,12 @@ class DocupData extends DataClass implements Insertable<DocupData> {
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return DocupData(
+      isRemote: serializer.fromJson<bool>(json['isRemote']),
       id: serializer.fromJson<String>(json['id']),
       createdAt: serializer.fromJson<DateTime>(json['created_at']),
       updatedAt: serializer.fromJson<DateTime>(json['updated_at']),
       deletedAt: serializer.fromJson<DateTime?>(json['deleted_at']),
       dataB64: serializer.fromJson<String>(json['data_b64']),
-      isRemote: serializer.fromJson<bool>(json['isRemote']),
       taskId: serializer.fromJson<String>(json['task_id']),
       userId: serializer.fromJson<String>(json['user_id']),
     );
@@ -1015,44 +1015,44 @@ class DocupData extends DataClass implements Insertable<DocupData> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'isRemote': serializer.toJson<bool>(isRemote),
       'id': serializer.toJson<String>(id),
       'created_at': serializer.toJson<DateTime>(createdAt),
       'updated_at': serializer.toJson<DateTime>(updatedAt),
       'deleted_at': serializer.toJson<DateTime?>(deletedAt),
       'data_b64': serializer.toJson<String>(dataB64),
-      'isRemote': serializer.toJson<bool>(isRemote),
       'task_id': serializer.toJson<String>(taskId),
       'user_id': serializer.toJson<String>(userId),
     };
   }
 
   DocupData copyWith(
-          {String? id,
+          {bool? isRemote,
+          String? id,
           DateTime? createdAt,
           DateTime? updatedAt,
           Value<DateTime?> deletedAt = const Value.absent(),
           String? dataB64,
-          bool? isRemote,
           String? taskId,
           String? userId}) =>
       DocupData(
+        isRemote: isRemote ?? this.isRemote,
         id: id ?? this.id,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
         deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
         dataB64: dataB64 ?? this.dataB64,
-        isRemote: isRemote ?? this.isRemote,
         taskId: taskId ?? this.taskId,
         userId: userId ?? this.userId,
       );
   DocupData copyWithCompanion(DocupCompanion data) {
     return DocupData(
+      isRemote: data.isRemote.present ? data.isRemote.value : this.isRemote,
       id: data.id.present ? data.id.value : this.id,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
       dataB64: data.dataB64.present ? data.dataB64.value : this.dataB64,
-      isRemote: data.isRemote.present ? data.isRemote.value : this.isRemote,
       taskId: data.taskId.present ? data.taskId.value : this.taskId,
       userId: data.userId.present ? data.userId.value : this.userId,
     );
@@ -1061,12 +1061,12 @@ class DocupData extends DataClass implements Insertable<DocupData> {
   @override
   String toString() {
     return (StringBuffer('DocupData(')
+          ..write('isRemote: $isRemote, ')
           ..write('id: $id, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('dataB64: $dataB64, ')
-          ..write('isRemote: $isRemote, ')
           ..write('taskId: $taskId, ')
           ..write('userId: $userId')
           ..write(')'))
@@ -1075,49 +1075,49 @@ class DocupData extends DataClass implements Insertable<DocupData> {
 
   @override
   int get hashCode => Object.hash(
-      id, createdAt, updatedAt, deletedAt, dataB64, isRemote, taskId, userId);
+      isRemote, id, createdAt, updatedAt, deletedAt, dataB64, taskId, userId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is DocupData &&
+          other.isRemote == this.isRemote &&
           other.id == this.id &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt &&
           other.dataB64 == this.dataB64 &&
-          other.isRemote == this.isRemote &&
           other.taskId == this.taskId &&
           other.userId == this.userId);
 }
 
 class DocupCompanion extends UpdateCompanion<DocupData> {
+  final Value<bool> isRemote;
   final Value<String> id;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
   final Value<String> dataB64;
-  final Value<bool> isRemote;
   final Value<String> taskId;
   final Value<String> userId;
   final Value<int> rowid;
   const DocupCompanion({
+    this.isRemote = const Value.absent(),
     this.id = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.dataB64 = const Value.absent(),
-    this.isRemote = const Value.absent(),
     this.taskId = const Value.absent(),
     this.userId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DocupCompanion.insert({
+    this.isRemote = const Value.absent(),
     this.id = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
     required String dataB64,
-    this.isRemote = const Value.absent(),
     required String taskId,
     required String userId,
     this.rowid = const Value.absent(),
@@ -1127,23 +1127,23 @@ class DocupCompanion extends UpdateCompanion<DocupData> {
         taskId = Value(taskId),
         userId = Value(userId);
   static Insertable<DocupData> custom({
+    Expression<bool>? isRemote,
     Expression<String>? id,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
     Expression<String>? dataB64,
-    Expression<bool>? isRemote,
     Expression<String>? taskId,
     Expression<String>? userId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (isRemote != null) 'is_remote': isRemote,
       if (id != null) 'id': id,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (dataB64 != null) 'data_b64': dataB64,
-      if (isRemote != null) 'is_remote': isRemote,
       if (taskId != null) 'task_id': taskId,
       if (userId != null) 'user_id': userId,
       if (rowid != null) 'rowid': rowid,
@@ -1151,22 +1151,22 @@ class DocupCompanion extends UpdateCompanion<DocupData> {
   }
 
   DocupCompanion copyWith(
-      {Value<String>? id,
+      {Value<bool>? isRemote,
+      Value<String>? id,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
       Value<DateTime?>? deletedAt,
       Value<String>? dataB64,
-      Value<bool>? isRemote,
       Value<String>? taskId,
       Value<String>? userId,
       Value<int>? rowid}) {
     return DocupCompanion(
+      isRemote: isRemote ?? this.isRemote,
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
       dataB64: dataB64 ?? this.dataB64,
-      isRemote: isRemote ?? this.isRemote,
       taskId: taskId ?? this.taskId,
       userId: userId ?? this.userId,
       rowid: rowid ?? this.rowid,
@@ -1176,6 +1176,9 @@ class DocupCompanion extends UpdateCompanion<DocupData> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (isRemote.present) {
+      map['is_remote'] = Variable<bool>(isRemote.value);
+    }
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
@@ -1190,9 +1193,6 @@ class DocupCompanion extends UpdateCompanion<DocupData> {
     }
     if (dataB64.present) {
       map['data_b64'] = Variable<String>(dataB64.value);
-    }
-    if (isRemote.present) {
-      map['is_remote'] = Variable<bool>(isRemote.value);
     }
     if (taskId.present) {
       map['task_id'] = Variable<String>(taskId.value);
@@ -1209,12 +1209,12 @@ class DocupCompanion extends UpdateCompanion<DocupData> {
   @override
   String toString() {
     return (StringBuffer('DocupCompanion(')
+          ..write('isRemote: $isRemote, ')
           ..write('id: $id, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('dataB64: $dataB64, ')
-          ..write('isRemote: $isRemote, ')
           ..write('taskId: $taskId, ')
           ..write('userId: $userId, ')
           ..write('rowid: $rowid')
@@ -1242,21 +1242,21 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 }
 
 typedef $$ProjectTableCreateCompanionBuilder = ProjectCompanion Function({
+  Value<bool> isRemote,
   Value<String> id,
   required DateTime createdAt,
   required DateTime updatedAt,
   Value<DateTime?> deletedAt,
-  Value<bool> isRemote,
   required String name,
   required String userId,
   Value<int> rowid,
 });
 typedef $$ProjectTableUpdateCompanionBuilder = ProjectCompanion Function({
+  Value<bool> isRemote,
   Value<String> id,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
   Value<DateTime?> deletedAt,
-  Value<bool> isRemote,
   Value<String> name,
   Value<String> userId,
   Value<int> rowid,
@@ -1265,6 +1265,11 @@ typedef $$ProjectTableUpdateCompanionBuilder = ProjectCompanion Function({
 class $$ProjectTableFilterComposer
     extends FilterComposer<_$AppDatabase, $ProjectTable> {
   $$ProjectTableFilterComposer(super.$state);
+  ColumnFilters<bool> get isRemote => $state.composableBuilder(
+      column: $state.table.isRemote,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   ColumnFilters<String> get id => $state.composableBuilder(
       column: $state.table.id,
       builder: (column, joinBuilders) =>
@@ -1285,11 +1290,6 @@ class $$ProjectTableFilterComposer
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<bool> get isRemote => $state.composableBuilder(
-      column: $state.table.isRemote,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
   ColumnFilters<String> get name => $state.composableBuilder(
       column: $state.table.name,
       builder: (column, joinBuilders) =>
@@ -1304,6 +1304,11 @@ class $$ProjectTableFilterComposer
 class $$ProjectTableOrderingComposer
     extends OrderingComposer<_$AppDatabase, $ProjectTable> {
   $$ProjectTableOrderingComposer(super.$state);
+  ColumnOrderings<bool> get isRemote => $state.composableBuilder(
+      column: $state.table.isRemote,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
   ColumnOrderings<String> get id => $state.composableBuilder(
       column: $state.table.id,
       builder: (column, joinBuilders) =>
@@ -1321,11 +1326,6 @@ class $$ProjectTableOrderingComposer
 
   ColumnOrderings<DateTime> get deletedAt => $state.composableBuilder(
       column: $state.table.deletedAt,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<bool> get isRemote => $state.composableBuilder(
-      column: $state.table.isRemote,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 
@@ -1360,41 +1360,41 @@ class $$ProjectTableTableManager extends RootTableManager<
           orderingComposer:
               $$ProjectTableOrderingComposer(ComposerState(db, table)),
           updateCompanionCallback: ({
+            Value<bool> isRemote = const Value.absent(),
             Value<String> id = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             Value<DateTime?> deletedAt = const Value.absent(),
-            Value<bool> isRemote = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<String> userId = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               ProjectCompanion(
+            isRemote: isRemote,
             id: id,
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt,
-            isRemote: isRemote,
             name: name,
             userId: userId,
             rowid: rowid,
           ),
           createCompanionCallback: ({
+            Value<bool> isRemote = const Value.absent(),
             Value<String> id = const Value.absent(),
             required DateTime createdAt,
             required DateTime updatedAt,
             Value<DateTime?> deletedAt = const Value.absent(),
-            Value<bool> isRemote = const Value.absent(),
             required String name,
             required String userId,
             Value<int> rowid = const Value.absent(),
           }) =>
               ProjectCompanion.insert(
+            isRemote: isRemote,
             id: id,
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt,
-            isRemote: isRemote,
             name: name,
             userId: userId,
             rowid: rowid,
@@ -1418,23 +1418,23 @@ typedef $$ProjectTableProcessedTableManager = ProcessedTableManager<
     ProjectData,
     PrefetchHooks Function()>;
 typedef $$TaskTableCreateCompanionBuilder = TaskCompanion Function({
+  Value<bool> isRemote,
   Value<String> id,
   required DateTime createdAt,
   required DateTime updatedAt,
   Value<DateTime?> deletedAt,
   required String name,
-  Value<bool> isRemote,
   required String projectId,
   required String userId,
   Value<int> rowid,
 });
 typedef $$TaskTableUpdateCompanionBuilder = TaskCompanion Function({
+  Value<bool> isRemote,
   Value<String> id,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
   Value<DateTime?> deletedAt,
   Value<String> name,
-  Value<bool> isRemote,
   Value<String> projectId,
   Value<String> userId,
   Value<int> rowid,
@@ -1443,6 +1443,11 @@ typedef $$TaskTableUpdateCompanionBuilder = TaskCompanion Function({
 class $$TaskTableFilterComposer
     extends FilterComposer<_$AppDatabase, $TaskTable> {
   $$TaskTableFilterComposer(super.$state);
+  ColumnFilters<bool> get isRemote => $state.composableBuilder(
+      column: $state.table.isRemote,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   ColumnFilters<String> get id => $state.composableBuilder(
       column: $state.table.id,
       builder: (column, joinBuilders) =>
@@ -1468,11 +1473,6 @@ class $$TaskTableFilterComposer
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<bool> get isRemote => $state.composableBuilder(
-      column: $state.table.isRemote,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
   ColumnFilters<String> get projectId => $state.composableBuilder(
       column: $state.table.projectId,
       builder: (column, joinBuilders) =>
@@ -1487,6 +1487,11 @@ class $$TaskTableFilterComposer
 class $$TaskTableOrderingComposer
     extends OrderingComposer<_$AppDatabase, $TaskTable> {
   $$TaskTableOrderingComposer(super.$state);
+  ColumnOrderings<bool> get isRemote => $state.composableBuilder(
+      column: $state.table.isRemote,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
   ColumnOrderings<String> get id => $state.composableBuilder(
       column: $state.table.id,
       builder: (column, joinBuilders) =>
@@ -1509,11 +1514,6 @@ class $$TaskTableOrderingComposer
 
   ColumnOrderings<String> get name => $state.composableBuilder(
       column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<bool> get isRemote => $state.composableBuilder(
-      column: $state.table.isRemote,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 
@@ -1548,45 +1548,45 @@ class $$TaskTableTableManager extends RootTableManager<
           orderingComposer:
               $$TaskTableOrderingComposer(ComposerState(db, table)),
           updateCompanionCallback: ({
+            Value<bool> isRemote = const Value.absent(),
             Value<String> id = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             Value<DateTime?> deletedAt = const Value.absent(),
             Value<String> name = const Value.absent(),
-            Value<bool> isRemote = const Value.absent(),
             Value<String> projectId = const Value.absent(),
             Value<String> userId = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               TaskCompanion(
+            isRemote: isRemote,
             id: id,
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt,
             name: name,
-            isRemote: isRemote,
             projectId: projectId,
             userId: userId,
             rowid: rowid,
           ),
           createCompanionCallback: ({
+            Value<bool> isRemote = const Value.absent(),
             Value<String> id = const Value.absent(),
             required DateTime createdAt,
             required DateTime updatedAt,
             Value<DateTime?> deletedAt = const Value.absent(),
             required String name,
-            Value<bool> isRemote = const Value.absent(),
             required String projectId,
             required String userId,
             Value<int> rowid = const Value.absent(),
           }) =>
               TaskCompanion.insert(
+            isRemote: isRemote,
             id: id,
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt,
             name: name,
-            isRemote: isRemote,
             projectId: projectId,
             userId: userId,
             rowid: rowid,
@@ -1610,23 +1610,23 @@ typedef $$TaskTableProcessedTableManager = ProcessedTableManager<
     TaskData,
     PrefetchHooks Function()>;
 typedef $$DocupTableCreateCompanionBuilder = DocupCompanion Function({
+  Value<bool> isRemote,
   Value<String> id,
   required DateTime createdAt,
   required DateTime updatedAt,
   Value<DateTime?> deletedAt,
   required String dataB64,
-  Value<bool> isRemote,
   required String taskId,
   required String userId,
   Value<int> rowid,
 });
 typedef $$DocupTableUpdateCompanionBuilder = DocupCompanion Function({
+  Value<bool> isRemote,
   Value<String> id,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
   Value<DateTime?> deletedAt,
   Value<String> dataB64,
-  Value<bool> isRemote,
   Value<String> taskId,
   Value<String> userId,
   Value<int> rowid,
@@ -1635,6 +1635,11 @@ typedef $$DocupTableUpdateCompanionBuilder = DocupCompanion Function({
 class $$DocupTableFilterComposer
     extends FilterComposer<_$AppDatabase, $DocupTable> {
   $$DocupTableFilterComposer(super.$state);
+  ColumnFilters<bool> get isRemote => $state.composableBuilder(
+      column: $state.table.isRemote,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
   ColumnFilters<String> get id => $state.composableBuilder(
       column: $state.table.id,
       builder: (column, joinBuilders) =>
@@ -1660,11 +1665,6 @@ class $$DocupTableFilterComposer
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<bool> get isRemote => $state.composableBuilder(
-      column: $state.table.isRemote,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
   ColumnFilters<String> get taskId => $state.composableBuilder(
       column: $state.table.taskId,
       builder: (column, joinBuilders) =>
@@ -1679,6 +1679,11 @@ class $$DocupTableFilterComposer
 class $$DocupTableOrderingComposer
     extends OrderingComposer<_$AppDatabase, $DocupTable> {
   $$DocupTableOrderingComposer(super.$state);
+  ColumnOrderings<bool> get isRemote => $state.composableBuilder(
+      column: $state.table.isRemote,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
   ColumnOrderings<String> get id => $state.composableBuilder(
       column: $state.table.id,
       builder: (column, joinBuilders) =>
@@ -1701,11 +1706,6 @@ class $$DocupTableOrderingComposer
 
   ColumnOrderings<String> get dataB64 => $state.composableBuilder(
       column: $state.table.dataB64,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<bool> get isRemote => $state.composableBuilder(
-      column: $state.table.isRemote,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 
@@ -1740,45 +1740,45 @@ class $$DocupTableTableManager extends RootTableManager<
           orderingComposer:
               $$DocupTableOrderingComposer(ComposerState(db, table)),
           updateCompanionCallback: ({
+            Value<bool> isRemote = const Value.absent(),
             Value<String> id = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             Value<DateTime?> deletedAt = const Value.absent(),
             Value<String> dataB64 = const Value.absent(),
-            Value<bool> isRemote = const Value.absent(),
             Value<String> taskId = const Value.absent(),
             Value<String> userId = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               DocupCompanion(
+            isRemote: isRemote,
             id: id,
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt,
             dataB64: dataB64,
-            isRemote: isRemote,
             taskId: taskId,
             userId: userId,
             rowid: rowid,
           ),
           createCompanionCallback: ({
+            Value<bool> isRemote = const Value.absent(),
             Value<String> id = const Value.absent(),
             required DateTime createdAt,
             required DateTime updatedAt,
             Value<DateTime?> deletedAt = const Value.absent(),
             required String dataB64,
-            Value<bool> isRemote = const Value.absent(),
             required String taskId,
             required String userId,
             Value<int> rowid = const Value.absent(),
           }) =>
               DocupCompanion.insert(
+            isRemote: isRemote,
             id: id,
             createdAt: createdAt,
             updatedAt: updatedAt,
             deletedAt: deletedAt,
             dataB64: dataB64,
-            isRemote: isRemote,
             taskId: taskId,
             userId: userId,
             rowid: rowid,

@@ -1,0 +1,1 @@
+/Users/vinceramcesoliveros/flutter projects/custom_supabase_drift_doc_sync/build/app/intermediates/cxx/RelWithDebInfo/x6j2w2s1/obj/x86

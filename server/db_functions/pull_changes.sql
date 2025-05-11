@@ -72,8 +72,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE
-OR REPLACE FUNCTION funcs.pull_updates_created (
+CREATE OR REPLACE FUNCTION funcs.pull_updates_created (
   _user_id UUID,
   _table_name TEXT,
   _last_pulled_at TIMESTAMP WITH TIME ZONE

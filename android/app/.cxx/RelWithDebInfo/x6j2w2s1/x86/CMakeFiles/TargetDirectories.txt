@@ -1,0 +1,2 @@
+/Users/vinceramcesoliveros/flutter projects/custom_supabase_drift_doc_sync/android/app/.cxx/RelWithDebInfo/x6j2w2s1/x86/CMakeFiles/edit_cache.dir
+/Users/vinceramcesoliveros/flutter projects/custom_supabase_drift_doc_sync/android/app/.cxx/RelWithDebInfo/x6j2w2s1/x86/CMakeFiles/rebuild_cache.dir
