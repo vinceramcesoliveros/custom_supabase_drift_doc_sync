@@ -3,8 +3,6 @@ import 'package:custom_supabase_drift_sync/core/navigation/router.dart';
 import 'package:custom_supabase_drift_sync/db/database.dart' as db;
 import 'package:custom_supabase_drift_sync/sync/sync_builder.dart';
 import 'package:custom_supabase_drift_sync/sync/sync_interface.dart';
-import 'package:custom_supabase_drift_sync/sync/sync_manager.dart';
-import 'package:custom_sync_drift_annotations/annotations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

@@ -16,6 +16,16 @@ extension TableFinder on GeneratedDatabase {
   }
 }
 
+extension DataClassExtension on DataClass {
+  DateTime get rowUpdatedAt {
+    final data = this.toJson()['updated_at'];
+    if (data == null) {
+      throw ArgumentError.value('table `updated_at` not found');
+    }
+    return DateTime.parse(data);
+  }
+}
+
 extension SyncTableExtension on TableServer {
   Future<void> sync(Map<String, dynamic> changes, AppDatabase db) async {
     final taskChanges = changes[serverTblName] as Map<String, dynamic>;
@@ -26,12 +36,12 @@ extension SyncTableExtension on TableServer {
     final createdOrUpdated = taskChanges['created'] + taskChanges['updated'];
 
     for (final record in createdOrUpdated) {
-      final existingRecord = await (db.select(db.project)
+      final existingRecord = await (db.select(table)
             ..where((tbl) => tbl.id.equals(record['id'])))
           .getSingleOrNull();
       if (existingRecord == null ||
           DateTime.parse(record['updated_at'])
-              .isAfter(existingRecord.updatedAt)) {
+              .isAfter(existingRecord.rowUpdatedAt)) {
         await db.into(table).insertOnConflictUpdate(fromJson(
             ((record as Map<String, dynamic>))..addAll({'isRemote': true})));
       }
