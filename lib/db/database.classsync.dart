@@ -26,6 +26,14 @@ extension TaskSyncExtension on Task {
             (record as Map<String, dynamic>)..addAll({'isRemote': true})));
       }
     }
+
+    // Handle deleted tasks
+    final deletedIds = taskChanges['deleted'] as List<dynamic>;
+    if (deletedIds.isNotEmpty) {
+      await (db.delete(taskInstance)
+            ..where((tbl) => tbl.id.isIn(deletedIds.map((e) => e.toString()))))
+          .go();
+    }
   }
 }
 
@@ -94,6 +102,14 @@ extension ProjectSyncExtension on Project {
                 (record as Map<String, dynamic>)..addAll({'isRemote': true})));
       }
     }
+
+    // Handle deleted projects
+    final deletedIds = projectChanges['deleted'] as List<dynamic>;
+    if (deletedIds.isNotEmpty) {
+      await (db.delete(projectInstance)
+            ..where((tbl) => tbl.id.isIn(deletedIds.map((e) => e.toString()))))
+          .go();
+    }
   }
 }
 
@@ -158,6 +174,14 @@ extension DocupSyncExtension on Docup {
         await db.into(docupInstance).insertOnConflictUpdate(DocupData.fromJson(
             (record as Map<String, dynamic>)..addAll({'isRemote': true})));
       }
+    }
+
+    // Handle deleted docups
+    final deletedIds = docupChanges['deleted'] as List<dynamic>;
+    if (deletedIds.isNotEmpty) {
+      await (db.delete(docupInstance)
+            ..where((tbl) => tbl.id.isIn(deletedIds.map((e) => e.toString()))))
+          .go();
     }
   }
 }

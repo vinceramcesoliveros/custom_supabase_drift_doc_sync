@@ -20,6 +20,8 @@ https://github.com/user-attachments/assets/274e50de-ac70-42b1-9a43-083a8f0db7ac
 **Notes:**
 The demo is slightly longer because it is a live demonstration and involves turning the Wi-Fi on and off. This same demo functions well on all other Flutter platforms and Wear OS if properly configured.
 
+Its mainly designed for native platforms. On the Web there is a problem that if user opens multiple tabs, the database needs to be unique for each tab. Because of that the web initialily syncs all data each time it is opened.
+
 ## The synchronization is achieved by:
 ### Client
 - Annotation drift cases and providing special variables

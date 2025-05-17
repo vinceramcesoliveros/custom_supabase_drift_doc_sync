@@ -111,6 +111,7 @@ class AppDatabase extends _$AppDatabase {
 
     // Currently having multiple tabs open in the same browser is not supported.
     // So it is important to have unique database names for each tab.
+    // https://github.com/simolus3/sqlite3.dart/issues/240
     final dbName = UniversalPlatform.isWeb
         ? 'db_name ${const Uuid().v4()}'
         : 'my_database6';
