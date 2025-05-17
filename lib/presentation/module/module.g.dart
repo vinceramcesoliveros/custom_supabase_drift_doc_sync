@@ -20,7 +20,7 @@ final appDatabaseProvider = Provider<AppDatabase>.internal(
 );
 
 typedef AppDatabaseRef = ProviderRef<AppDatabase>;
-String _$authStateHash() => r'686f1be7c4c7bfd58ec61d6f7bfa5e890a824483';
+String _$authStateHash() => r'5abd0ae917a0d5359c05b8758ae8638fbc790929';
 
 /// See also [authState].
 @ProviderFor(authState)
@@ -92,7 +92,7 @@ final sessionPProvider = NotifierProvider<SessionP, Option<Session>>.internal(
 );
 
 typedef _$SessionP = Notifier<Option<Session>>;
-String _$syncMangerPHash() => r'5eb78e28e764ac72be391ffed997f7e73962de3a';
+String _$syncMangerPHash() => r'74e29c52f607215452de7bdaa725757a944ac9ce';
 
 /// See also [SyncMangerP].
 @ProviderFor(SyncMangerP)

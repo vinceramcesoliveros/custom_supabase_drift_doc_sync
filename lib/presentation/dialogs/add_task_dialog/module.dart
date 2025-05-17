@@ -42,8 +42,8 @@ class AddTaskP extends _$AddTaskP {
           id: Value(taskId),
           name: state.name,
           projectId: projectId,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+          createdAt: DateTime.now().toUtc(),
+          updatedAt: DateTime.now().toUtc(),
           userId: project.userId,
         );
 
@@ -58,8 +58,8 @@ class AddTaskP extends _$AddTaskP {
         final docUpdate = DocupCompanion.insert(
           taskId: taskId,
           dataB64: base64Encode(mergedUpdates),
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+          createdAt: DateTime.now().toUtc(),
+          updatedAt: DateTime.now().toUtc(),
           userId: project.userId,
         );
 

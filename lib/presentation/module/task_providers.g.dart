@@ -154,7 +154,7 @@ class _TaskNameProviderElement extends AutoDisposeFutureProviderElement<String>
   String get taskId => (origin as TaskNameProvider).taskId;
 }
 
-String _$taskPHash() => r'2c533654bb11e8e06dd2e51318827b5fd421b3ee';
+String _$taskPHash() => r'c418c8dde865dc3898342addc2584b44df45a01a';
 
 abstract class _$TaskP extends BuildlessAutoDisposeStreamNotifier<TaskData> {
   late final String taskId;

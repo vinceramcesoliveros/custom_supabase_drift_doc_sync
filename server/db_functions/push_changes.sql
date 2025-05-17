@@ -92,34 +92,36 @@ BEGIN
         END LOOP;
     END IF;
 
-    -- Delete all records with "deleted" values in one execution
+        -- Handle deletes
     SELECT array_agg(key ORDER BY key)
     INTO _updated_collections
     FROM jsonb_each(_changes)
     WHERE COALESCE(value->'deleted', '[]') <> '[]'
     AND to_regclass(format('%I.%I', split_part(key, '.', 1), split_part(key, '.', 2))) IS NOT NULL;
 
-    -- Log collections that will be deleted
     RAISE LOG 'push_changes: Collections to delete: %', _updated_collections;
 
     IF _updated_collections IS NOT NULL AND array_length(_updated_collections, 1) > 0 THEN
-        -- Construct and execute each delete statement separately
-        FOREACH _sql IN ARRAY (
-            SELECT format($f$
-                UPDATE %I.%I
-                SET deleted_at = $2
-                FROM jsonb_array_elements_text((($3)->%L)->'deleted') del
-                WHERE id = del
-                AND deleted_at IS NULL
-            $f$, split_part(collection, '.', 1), split_part(collection, '.', 2), collection)
+        -- Construct delete statements as an array
+        _sql_array := (
+            SELECT array_agg(
+                format($f$
+                    UPDATE %I.%I
+                    SET deleted_at = $1
+                    WHERE id::text = ANY(
+                        SELECT jsonb_array_elements_text((($2)->%L)->'deleted')
+                    )
+                    AND deleted_at IS NULL
+                $f$, split_part(collection, '.', 1), split_part(collection, '.', 2), collection)
+            )
             FROM UNNEST(_updated_collections) collection
-        )
+        );
+
+        -- Execute each delete statement
+        FOREACH _sql IN ARRAY _sql_array
         LOOP
-            -- Log the delete statement being executed
             RAISE LOG 'push_changes: Executing delete SQL: %', _sql;
-            
-            -- Execute the delete statement
-            EXECUTE _sql USING _user_id, _now_utc, _changes;
+            EXECUTE _sql USING _now_utc, _changes;
         END LOOP;
     END IF;
 

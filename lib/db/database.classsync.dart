@@ -68,13 +68,7 @@ extension TaskGetChangesExtension on Task {
                 'instance_id': currentInstanceId,
               }))
             .toList(),
-        'deleted': deleted
-            .map((e) => e.toJson()
-              ..remove('isRemote')
-              ..addAll({
-                'instance_id': currentInstanceId,
-              }))
-            .toList(),
+        'deleted': deleted.map((e) => e.id).toList(),
       }
     };
   }
@@ -142,13 +136,7 @@ extension ProjectGetChangesExtension on Project {
                 'instance_id': currentInstanceId,
               }))
             .toList(),
-        'deleted': deleted
-            .map((e) => e.toJson()
-              ..remove('isRemote')
-              ..addAll({
-                'instance_id': currentInstanceId,
-              }))
-            .toList(),
+        'deleted': deleted.map((e) => e.id).toList(),
       }
     };
   }
@@ -213,13 +201,7 @@ extension DocupGetChangesExtension on Docup {
                 'instance_id': currentInstanceId,
               }))
             .toList(),
-        'deleted': deleted
-            .map((e) => e.toJson()
-              ..remove('isRemote')
-              ..addAll({
-                'instance_id': currentInstanceId,
-              }))
-            .toList(),
+        'deleted': deleted.map((e) => e.id).toList(),
       }
     };
   }

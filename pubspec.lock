@@ -428,8 +428,8 @@ packages:
     dependency: "direct dev"
     description:
       path: "."
-      ref: "5464463361dd75c3d1e9e54b8fbc79166a2dd9f3"
-      resolved-ref: "5464463361dd75c3d1e9e54b8fbc79166a2dd9f3"
+      ref: b1d68a1a028d98ab2e35b2c720d2f2f173d77bc6
+      resolved-ref: b1d68a1a028d98ab2e35b2c720d2f2f173d77bc6
       url: "https://github.com/Musta-Pollo/custom_sync_drift_generator.git"
     source: git
     version: "0.0.1"

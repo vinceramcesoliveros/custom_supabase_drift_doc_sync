@@ -161,8 +161,6 @@ class SyncManagerS {
         E.t.error(e, st);
         print('Push changes failed: $e');
       }
-    } else {
-      await _setLastPulledAt(now.subtract(const Duration(minutes: 2)));
     }
 
     //TODO: Delete synced deletes from local db

@@ -113,7 +113,7 @@ class AppDatabase extends _$AppDatabase {
     // So it is important to have unique database names for each tab.
     final dbName = UniversalPlatform.isWeb
         ? 'db_name ${const Uuid().v4()}'
-        : 'my_database2';
+        : 'my_database6';
 
     return driftDatabase(
       name: dbName,

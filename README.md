@@ -253,6 +253,8 @@ class SyncManagerS {
 
 
 
+
+
 ### Server
 
 On the server, you need to define two things:
@@ -293,6 +295,18 @@ Tables require special timestamp attributes for tracking changes:
 
 An optional instance_id attribute enables more efficient filtering of real-time updates.
 
+### Creating, Updating, Deleting on the Client
+
+Whenever you create, update, delete and a you are assigning a new timestamp it is crucial to use: 
+`DateTime.now().toUtc()` (it must be converted into a UTC timezone) and also to set `isRemote = false` . For example:
+
+```dart
+value.copyWith(
+        name: newName,
+        isRemote: false,
+        updatedAt: DateTime.now().toUtc(),
+      );
+```
 ## Run this demo
 
 On Supabase create a project and do these steps:

@@ -6,7 +6,7 @@ part of 'module.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$addProjectPHash() => r'fb038d9277bddd9710b31e5f3e1850362851bf5f';
+String _$addProjectPHash() => r'6142549bbb770253ac4ea2689cc7f3690247ce06';
 
 /// See also [AddProjectP].
 @ProviderFor(AddProjectP)

@@ -56,9 +56,9 @@ class DocP extends _$DocP {
                 DocupCompanion.insert(
                   taskId: taskId,
                   dataB64: base64Encode(update),
-                  createdAt: DateTime.now(),
+                  createdAt: DateTime.now().toUtc(),
                   userId: userId,
-                  updatedAt: DateTime.now(),
+                  updatedAt: DateTime.now().toUtc(),
                 ),
               );
         },
