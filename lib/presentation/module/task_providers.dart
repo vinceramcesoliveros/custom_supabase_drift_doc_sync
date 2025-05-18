@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:custom_supabase_drift_sync/core/constants.dart';
 import 'package:custom_supabase_drift_sync/db/database.dart';
 import 'package:custom_supabase_drift_sync/presentation/module/module.dart';
+import 'package:drift/drift.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -27,7 +28,7 @@ class TaskP extends _$TaskP {
     final value = state.value;
     if (value == null) return;
     state = AsyncValue.data(value.copyWith(
-        name: newName, isRemote: false, updatedAt: DateTime.now()));
+        name: newName, isRemote: false, updatedAt: DateTime.now().toUtc()));
     EasyDebounce.debounce(K.debNameTaskProvider, const Duration(seconds: 4),
         () {
       updateInDB();
@@ -39,6 +40,18 @@ class TaskP extends _$TaskP {
     if (value == null) return;
     final appdb = ref.read(appDatabaseProvider);
     appdb.update(appdb.task).replace(value);
+  }
+
+  void deleteTask() {
+    final value = state.value;
+    if (value == null) return;
+    state = AsyncValue.data(value.copyWith(
+      isRemote: false,
+      deletedAt: Value(
+        DateTime.now().toUtc(),
+      ),
+    ));
+    updateInDB();
   }
 
   //UpdateINDBFUnction

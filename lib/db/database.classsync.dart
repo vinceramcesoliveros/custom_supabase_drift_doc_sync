@@ -26,6 +26,14 @@ extension TaskSyncExtension on Task {
             (record as Map<String, dynamic>)..addAll({'isRemote': true})));
       }
     }
+
+    // Handle deleted tasks
+    final deletedIds = taskChanges['deleted'] as List<dynamic>;
+    if (deletedIds.isNotEmpty) {
+      await (db.delete(taskInstance)
+            ..where((tbl) => tbl.id.isIn(deletedIds.map((e) => e.toString()))))
+          .go();
+    }
   }
 }
 
@@ -68,13 +76,7 @@ extension TaskGetChangesExtension on Task {
                 'instance_id': currentInstanceId,
               }))
             .toList(),
-        'deleted': deleted
-            .map((e) => e.toJson()
-              ..remove('isRemote')
-              ..addAll({
-                'instance_id': currentInstanceId,
-              }))
-            .toList(),
+        'deleted': deleted.map((e) => e.id).toList(),
       }
     };
   }
@@ -99,6 +101,14 @@ extension ProjectSyncExtension on Project {
             ProjectData.fromJson(
                 (record as Map<String, dynamic>)..addAll({'isRemote': true})));
       }
+    }
+
+    // Handle deleted projects
+    final deletedIds = projectChanges['deleted'] as List<dynamic>;
+    if (deletedIds.isNotEmpty) {
+      await (db.delete(projectInstance)
+            ..where((tbl) => tbl.id.isIn(deletedIds.map((e) => e.toString()))))
+          .go();
     }
   }
 }
@@ -142,13 +152,7 @@ extension ProjectGetChangesExtension on Project {
                 'instance_id': currentInstanceId,
               }))
             .toList(),
-        'deleted': deleted
-            .map((e) => e.toJson()
-              ..remove('isRemote')
-              ..addAll({
-                'instance_id': currentInstanceId,
-              }))
-            .toList(),
+        'deleted': deleted.map((e) => e.id).toList(),
       }
     };
   }
@@ -170,6 +174,14 @@ extension DocupSyncExtension on Docup {
         await db.into(docupInstance).insertOnConflictUpdate(DocupData.fromJson(
             (record as Map<String, dynamic>)..addAll({'isRemote': true})));
       }
+    }
+
+    // Handle deleted docups
+    final deletedIds = docupChanges['deleted'] as List<dynamic>;
+    if (deletedIds.isNotEmpty) {
+      await (db.delete(docupInstance)
+            ..where((tbl) => tbl.id.isIn(deletedIds.map((e) => e.toString()))))
+          .go();
     }
   }
 }
@@ -213,13 +225,7 @@ extension DocupGetChangesExtension on Docup {
                 'instance_id': currentInstanceId,
               }))
             .toList(),
-        'deleted': deleted
-            .map((e) => e.toJson()
-              ..remove('isRemote')
-              ..addAll({
-                'instance_id': currentInstanceId,
-              }))
-            .toList(),
+        'deleted': deleted.map((e) => e.id).toList(),
       }
     };
   }

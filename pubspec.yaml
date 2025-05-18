@@ -92,7 +92,7 @@ dev_dependencies:
   custom_sync_drift_generator:
     git:
       url: https://github.com/Musta-Pollo/custom_sync_drift_generator.git
-      ref: 5464463361dd75c3d1e9e54b8fbc79166a2dd9f3
+      ref: 630d1b1019a92e654b027144400913afef488968
 
   freezed: ^2.5.7
   flutter_lints: ^3.0.1

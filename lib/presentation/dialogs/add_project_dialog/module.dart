@@ -34,8 +34,8 @@ class AddProjectP extends _$AddProjectP {
       final project = ProjectCompanion.insert(
         name: state.name,
         userId: session.user.id,
-        updatedAt: DateTime.now(),
-        createdAt: DateTime.now(),
+        updatedAt: DateTime.now().toUtc(),
+        createdAt: DateTime.now().toUtc(),
         isRemote: const Value(false),
       );
 

@@ -47,7 +47,8 @@ class ProjectTaskIdsP extends _$ProjectTaskIdsP {
 
     final query = appdb.selectOnly(appdb.task)
       ..addColumns([appdb.task.id, appdb.task.name])
-      ..where(appdb.task.projectId.equals(projectId))
+      ..where(appdb.task.projectId.equals(projectId) &
+          appdb.task.deletedAt.isNull())
       ..orderBy([OrderingTerm.desc(appdb.task.name)]);
 
     await for (final event

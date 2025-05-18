@@ -19,9 +19,7 @@ final appDatabaseProvider = Provider<db.AppDatabase>.internal(
   allTransitiveDependencies: null,
 );
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef AppDatabaseRef = ProviderRef<db.AppDatabase>;
+typedef AppDatabaseRef = ProviderRef<AppDatabase>;
 String _$authStateHash() => r'5abd0ae917a0d5359c05b8758ae8638fbc790929';
 
 /// See also [authState].
@@ -102,7 +100,7 @@ final sessionPProvider = NotifierProvider<SessionP, Option<Session>>.internal(
 );
 
 typedef _$SessionP = Notifier<Option<Session>>;
-String _$syncMangerPHash() => r'fbc648ed04bcdabadf6191633c79b16004cd61cb';
+String _$syncMangerPHash() => r'74e29c52f607215452de7bdaa725757a944ac9ce';
 
 /// See also [SyncMangerP].
 @ProviderFor(SyncMangerP)

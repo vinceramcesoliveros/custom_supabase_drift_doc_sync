@@ -5,6 +5,7 @@ import 'package:custom_supabase_drift_sync/presentation/module/task_providers.da
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../../../core/constants.dart';
 
@@ -20,8 +21,15 @@ class TaskPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Task Page"),
-        actions: const [
-          ThemeButton(),
+        actions: [
+          const ThemeButton(),
+          IconButton(
+            icon: Icon(MdiIcons.trashCanOutline),
+            onPressed: () {
+              ref.read(taskPProvider(taskId).notifier).deleteTask();
+              context.router.maybePop();
+            },
+          )
         ],
       ),
       body: Column(

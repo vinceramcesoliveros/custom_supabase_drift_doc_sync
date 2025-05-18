@@ -37,9 +37,9 @@ BEGIN
     _schema_name := split_part(_table_name, '.', 1);
     _table := split_part(_table_name, '.', 2);
 
-    -- Execute the query with schema and table name
+    -- Execute the query with schema and table name, but selecting only the IDs
     EXECUTE format(
-        'SELECT jsonb_agg(src ORDER BY deleted_at, id::text) FROM %I.%I src WHERE src.user_id = $1 AND src.deleted_at IS NOT NULL AND src.deleted_at >= $2',
+        'SELECT jsonb_agg(src.id ORDER BY src.deleted_at, src.id::text) FROM %I.%I src WHERE src.user_id = $1 AND src.deleted_at IS NOT NULL AND src.deleted_at >= $2',
         _schema_name, _table
     ) INTO _result USING _user_id, _last_pulled_at;
 
