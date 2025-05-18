@@ -13,6 +13,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 import 'package:talker_riverpod_logger/talker_riverpod_logger_observer.dart';
 
 void main() async {
@@ -45,7 +46,12 @@ void main() async {
           talker: E.t,
         ),
       ],
-      child: const AppInicialization(child: App()),
+      child: TalkerWrapper(
+        talker: E.t,
+        child: const AppInicialization(
+          child: App(),
+        ),
+      ),
     ),
   );
 }

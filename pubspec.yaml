@@ -59,10 +59,7 @@ dependencies:
   file_picker: ^8.0.7
   easy_debounce: ^2.0.3
   retry: ^3.1.2
-  talker: ^4.4.1
-  talker_flutter: ^4.4.0
-  talker_logger: ^4.4.1
-  talker_riverpod_logger: ^4.4.1
+
   intl: ^0.19.0
   uuid: ^4.5.1
   drift_flutter: ^0.2.0
@@ -83,6 +80,10 @@ dependencies:
   adaptive_theme: ^3.7.0
   universal_platform: ^1.1.0
   internet_connection_checker_plus: ^2.7.1
+  talker_flutter: ^4.7.6
+  talker: ^4.7.6
+  talker_riverpod_logger: ^4.7.6
+
   # syncable: ^1.0.1
 dev_dependencies:
   flutter_test:
